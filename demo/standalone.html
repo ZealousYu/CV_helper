@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>简历面试助手 - Demo（已接后端 API）</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: #333; background: #f5f5f5; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar { width: 210px; background: #fff; border-right: 1px solid #ddd; padding: 16px 0; flex-shrink: 0; overflow-y: auto; max-height: 100vh; }
+    .sidebar h2 { padding: 0 16px 12px; font-size: 15px; border-bottom: 1px solid #eee; }
+    .sidebar .nav-group { padding: 8px 16px 4px; font-size: 11px; color: #999; text-transform: uppercase; }
+    .sidebar button { display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; color: #555; font-size: 14px; }
+    .sidebar button:hover { background: #f0f0f0; }
+    .sidebar button.active { background: #e8f0fe; color: #1a56db; font-weight: 600; border-right: 3px solid #1a56db; }
+    .main { flex: 1; padding: 20px 24px; overflow: auto; }
+    .page-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
+    .upload { border: 2px dashed #bbb; padding: 24px; text-align: center; color: #888; cursor: pointer; margin-bottom: 12px; border-radius: 4px; }
+    .upload:hover { border-color: #1a56db; color: #1a56db; }
+    .upload.drag { border-color: #1a56db; background: #e8f0fe; color: #1a56db; }
+    .parse-modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 350; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .parse-panel { background: #fff; width: min(720px, 100%); max-height: 88vh; overflow: auto; border-radius: 6px; padding: 20px; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+    .parse-card { border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 10px; }
+    .parse-card.selected { border-color: #1a56db; background: #f7faff; }
+    .parse-card label.row { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+    .parse-card input[type=checkbox] { margin-top: 3px; }
+    .btn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px; margin: 0 8px 8px 0; }
+    .btn:hover { background: #f5f5f5; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary { background: #1a56db; color: #fff; border-color: #1a56db; }
+    .btn-primary:hover { background: #1648c0; }
+    .btn-active { background: #e8f0fe; border-color: #1a56db; color: #1a56db; }
+    .btn-ghost { background: transparent; border-color: transparent; color: #1a56db; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .tag { display: inline-block; background: #eee; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin: 0 4px 4px 0; cursor: default; }
+    .tag.clickable { cursor: pointer; background: #e8f0fe; color: #1a56db; }
+    .tag.clickable:hover { background: #d0e0fc; }
+    .tag-l1 { background: #e3f2fd; color: #1565c0; }
+    textarea, input[type=text], input[type=month], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 14px; }
+    textarea { min-height: 80px; resize: vertical; }
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; }
+    .form-row .hint { font-weight: 400; color: #999; font-size: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hidden { display: none !important; }
+    .interview { display: flex; gap: 16px; height: calc(100vh - 100px); }
+    .col-left, .col-right { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px; overflow: auto; }
+    .col-left { flex: 6; display: flex; flex-direction: column; }
+    .col-right { flex: 4; }
+    .question-box { background: #f8f9ff; border: 1px solid #c5d4f7; padding: 20px; font-size: 17px; font-weight: 600; margin-bottom: 16px; min-height: 72px; line-height: 1.5; }
+    .btn-danger { background: #fff; color: #c62828; border-color: #ef9a9a; }
+    .btn-danger:hover { background: #ffebee; }
+    .btn-danger-solid { background: #c62828; color: #fff; border-color: #c62828; }
+    .btn-danger-solid:hover { background: #b71c1c; }
+    .confirm-modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 450; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .confirm-panel { background: #fff; width: min(420px, 100%); border-radius: 6px; padding: 20px; box-shadow: 0 8px 28px rgba(0,0,0,.2); }
+    .confirm-panel h3 { font-size: 16px; margin-bottom: 8px; }
+    .confirm-skip { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0 4px; font-size: 12px; color: #666; cursor: pointer; line-height: 1.4; }
+    .confirm-skip input { margin-top: 2px; }
+    .tree-node { display: flex; align-items: flex-start; gap: 6px; padding: 6px 8px; margin: 2px 0; border-radius: 4px; cursor: pointer; font-size: 13px; border: 1px solid transparent; line-height: 1.4; }
+    .tree-node:hover { background: #f0f0f0; }
+    .tree-node.active { background: #e8f0fe; border-color: #1a56db; }
+    .tree-node .tree-label { flex: 1; min-width: 0; }
+    .tree-node .tree-del { flex-shrink: 0; opacity: 0; padding: 0 4px; font-size: 12px; color: #c62828; border: none; background: none; cursor: pointer; }
+    .tree-node:hover .tree-del, .tree-node.active .tree-del { opacity: 1; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); display: flex; justify-content: flex-end; z-index: 100; }
+    .overlay-panel { width: 380px; background: #fff; padding: 20px; box-shadow: -2px 0 8px rgba(0,0,0,.12); overflow-y: auto; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
+    .modal { background: #fff; padding: 24px; width: 560px; max-width: 92vw; max-height: 85vh; overflow: auto; border-radius: 6px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 4px; z-index: 300; font-size: 13px; }
+    .badge { display: inline-block; padding: 2px 8px; background: #eee; border-radius: 3px; font-size: 11px; }
+    .feedback { border: 1px solid #ffe082; background: #fffde7; padding: 12px; margin: 12px 0; border-radius: 4px; }
+    .notebook-qa { padding: 10px 12px; border-left: 2px solid #ddd; margin: 6px 0; font-size: 13px; background: #fafafa; border-radius: 0 4px 4px 0; }
+    .list-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; gap: 12px; }
+    .list-row:hover { border-color: #1a56db; }
+    .row-actions { flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+    .summary-bar { background: #f0f7ff; border: 1px solid #c5d4f7; border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
+    .match-ok { color: #2e7d32; }
+    .match-gap { color: #c62828; }
+    .match-tip { color: #1565c0; }
+    .quiz-card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 24px; max-width: 640px; margin: 0 auto; }
+    .empty { text-align: center; padding: 40px; color: #888; }
+    .flex-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .meta { color: #888; font-size: 12px; }
+    .divider { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .status-dot.weak { background: #f57c00; }
+    .status-dot.ok { background: #43a047; }
+    .qa-weak { border-color: #e53935 !important; background: #fff5f5; }
+    .qa-good { border-color: #43a047; background: #f4fff6; }
+    .qa-pending { border-left: 3px solid #bbb; }
+    .weak-label { color: #c62828; font-weight: 600; font-size: 12px; }
+    .good-label { color: #2e7d32; font-weight: 600; font-size: 12px; }
+    .loading-mask { position: fixed; inset: 0; background: rgba(255,255,255,.72); z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #d0d7e8; border-top-color: #1a56db; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #333; font-weight: 600; }
+    .bar-track { width: 200px; height: 6px; background: #e8eef8; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 40%; background: #1a56db; border-radius: 4px; animation: bar 1.2s ease-in-out infinite; }
+    @keyframes bar { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+    .tip-box { background: #f7f9fc; border: 1px solid #e0e6ef; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.55; color: #555; }
+    .tip-box summary { cursor: pointer; font-weight: 600; color: #333; list-style: none; }
+    .tip-box summary::-webkit-details-marker { display: none; }
+    .tip-box summary::before { content: '▸ '; color: #1a56db; }
+    .tip-box[open] summary::before { content: '▾ '; }
+    .tip-box ol { margin: 8px 0 0 1.2em; }
+    .tip-box li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <h2>简历面试助手</h2>
+    <nav id="nav"></nav>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div id="toast" class="toast hidden"></div>
+<div id="modal-root"></div>
+
+<script>
+/** 一级分类固定，AI 填二三级（Demo 预置） */
+const L1_TAGS = ['行为面试', '技术', '业务理解', '协作沟通', '职业规划'];
+
+const NAV = [
+  { id: 'experience', label: '① 我的经历库', group: '准备' },
+  { id: 'intro', label: '② 自我介绍', group: '准备' },
+  { id: 'interview', label: '③ 模拟面试', group: '练习' },
+  { id: 'notebook', label: '④ 面试笔记本', group: '归档' },
+  { id: 'knowledge', label: '⑤ 知识汇总', group: '归档' },
+  { id: 'debrief', label: '⑥ 真实面经', group: '归档' },
+  { id: 'job', label: '⑦ 岗位定制', group: '定向' },
+  { id: 'me', label: '⑧ 我的', group: '账号' },
+];
+
+const DELETE_SCOPES = {
+  experience: '经历库',
+  intro: '自我介绍',
+  notebook: '面试笔记本',
+  tree: '追问树',
+  knowledge: '知识汇总',
+  debrief: '真实面经',
+  debrief_item: '面经问答',
+};
+
+const PROFILE_KEY = 'cv_helper_profile';
+const SKIP_DELETE_KEY = 'cv_helper_skip_delete_confirm';
+
+let state = {
+  page: 'experience',
+  notebookDetailExpId: null,
+  knowledgeFilter: null,
+  knowledgeEditId: null,
+  quiz: null,
+  expForm: null,
+  addKnowledgeDraft: null,
+  introOverlay: '',
+  reviewModal: '',
+  notebookSearch: '',
+  jdText: '',
+  jdReport: null,
+  loading: null,
+  reviewItems: null,
+  apiOnline: false,
+  apiError: '',
+  experiences: [],
+  introContent: '您好，我是 CHEN，目前专注于产品方向。曾在 XX 公司担任产品实习生，负责增长模块的数据分析与需求推进，期间主导指标体系建设，助力 DAU 提升 12%。我擅长用数据驱动决策，也具备跨部门协作经验。',
+  introVersions: [{ id: 'v1', label: 'AI初稿', date: '2026-08-20', content: '' }],
+  knowledge: [],
+  debriefs: [],
+  debriefDetailId: null,
+  debriefForm: null,
+  resumeParse: null,
+  confirmDialog: null,
+  profile: { displayName: 'CHEN', targetRole: '', note: '' },
+  interview: {
+    expId: 'exp_001', phase: 'idle', activeNodeId: null, branchFrom: null,
+    currentQ: '', draft: '', mode: null,
+  },
+};
+
+const MOCK_Q = {
+  deep_dive: ['如果选错指标，你怎么发现并纠正？'],
+  new_angle: ['从团队协作看，最大收获是什么？'],
+  diverge: ['你提到数据驱动，举一个具体例子？'],
+};
+
+/* ========== Backend API ========== */
+// 经 /ui 打开时与后端同域；直接打开 html 则回落本机 8000
+const API_BASE = (location.port === '8000' || location.pathname.indexOf('/ui') === 0)
+  ? ''
+  : 'http://127.0.0.1:8000';
+
+async function api(path, opts) {
+  opts = opts || {};
+  const res = await fetch(API_BASE + path, Object.assign({
+    headers: { 'Content-Type': 'application/json' },
+  }, opts));
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText;
+    try { msg = await res.text(); } catch (e) {}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  const ct = res.headers.get('content-type') || '';
+  if (ct.indexOf('application/json') >= 0) return res.json();
+  return res.text();
+}
+
+function mapExp(e) {
+  return {
+    id: e.id,
+    type: e.type,
+    company: e.company,
+    title: e.title,
+    role: e.role,
+    period: e.period,
+    summary: e.summary,
+    metrics: e.metrics || '',
+    extra: e.extra || '',
+    tags: e.tags || [],
+    qaTree: e.qa_tree || e.qaTree || [],
+    missingHint: e.metrics ? undefined : '建议补充量化数据',
+  };
+}
+
+function mapKnowledge(k) {
+  return {
+    id: k.id,
+    source: k.source_exp_id ? { expId: k.source_exp_id, nodeId: k.source_node_id } : null,
+    question: k.question,
+    myAnswer: k.my_answer || '',
+    referenceAnswer: k.reference_answer || '',
+    tags: k.tags || [],
+    note: k.note || '',
+    status: k.status || '待巩固',
+    addedAt: String(k.created_at || '').slice(0, 10),
+  };
+}
+
+function replaceExp(mapped) {
+  const i = state.experiences.findIndex(function (x) { return x.id === mapped.id; });
+  if (i >= 0) state.experiences[i] = mapped;
+  else state.experiences.unshift(mapped);
+}
+
+async function refreshAll() {
+  const [exps, know, debriefs, health] = await Promise.all([
+    api('/api/experiences'),
+    api('/api/knowledge'),
+    api('/api/debriefs'),
+    api('/api/health'),
+  ]);
+  state.experiences = exps.map(mapExp);
+  state.knowledge = know.map(mapKnowledge);
+  state.debriefs = debriefs;
+  state.apiOnline = true;
+  state.apiError = '';
+  state.llmEffective = health.llm_effective || 'mock';
+  if (!state.interview.expId && state.experiences.length) {
+    state.interview.expId = state.experiences[0].id;
+  }
+}
+
+/* ========== utils ========== */
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2200);
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function findNode(tree, id) {
+  for (const n of tree) {
+    if (n.nodeId === id) return n;
+    const f = findNode(n.children || [], id);
+    if (f) return f;
+  }
+  return null;
+}
+
+function updateNode(tree, id, patch) {
+  return tree.map(n => n.nodeId === id ? { ...n, ...patch } :
+    { ...n, children: updateNode(n.children || [], id, patch) });
+}
+
+function addChild(tree, parentId, child) {
+  return tree.map(n => n.nodeId === parentId ? { ...n, children: [...(n.children || []), child] } :
+    { ...n, children: addChild(n.children || [], parentId, child) });
+}
+
+function genId(parentId, siblings) {
+  if (!parentId) return 'q' + (siblings.length + 1);
+  const nums = siblings.map(s => parseInt(s.nodeId.split('.').pop(), 10)).filter(Boolean);
+  return parentId + '.' + ((nums.length ? Math.max(...nums) : 0) + 1);
+}
+
+function collectNodes(tree) {
+  const out = [];
+  const walk = (nodes) => (nodes || []).forEach(n => { out.push(n); walk(n.children); });
+  walk(tree);
+  return out;
+}
+
+function countNodes(tree) { return collectNodes(tree).length; }
+
+function summarizeKnowledgeTags(tree) {
+  const map = {};
+  collectNodes(tree).forEach(n => {
+    const tags = n.knowledgeTags || n.labels || [];
+    if (!tags.length) return;
+    const key = tags.join(' · ');
+    map[key] = (map[key] || 0) + 1;
+  });
+  return Object.entries(map).map(([label, count]) => ({ label, count, parts: label.split(' · ') }));
+}
+
+function getExpById(id) { return state.experiences.find(e => e.id === id); }
+function getExp() { return getExpById(state.interview.expId); }
+
+function guessKnowledgeTags(question) {
+  const q = question || '';
+  if (/RAG|向量|embedding|大模型|LLM|AI/i.test(q)) return ['技术', 'AI应用', 'RAG调优'];
+  if (/后端|接口|数据库|MySQL|Redis/i.test(q)) return ['技术', '后端', '知识库'];
+  if (/协作|跨部门|冲突|沟通/i.test(q)) return ['协作沟通', '跨部门'];
+  if (/指标|漏斗|增长|数据/i.test(q)) return ['业务理解', '指标设计'];
+  if (/介绍|负责|STAR/i.test(q)) return ['行为面试', '项目介绍'];
+  return ['行为面试'];
+}
+
+/* ========== navigation ========== */
+function renderNav() {
+  let html = '';
+  let lastGroup = '';
+  NAV.forEach(n => {
+    if (n.group !== lastGroup) {
+      html += `<div class="nav-group">${n.group}</div>`;
+      lastGroup = n.group;
+    }
+    const active = state.page === n.id
+      || (state.page === 'notebook-detail' && n.id === 'notebook')
+      || ((state.page === 'debrief' || state.page === 'debrief-detail') && n.id === 'debrief');
+    html += `<button class="${active ? 'active' : ''}" onclick="go('${n.id}')">${n.label}</button>`;
+  });
+  const p = state.profile || loadProfile();
+  const status = state.apiOnline
+    ? '<div class="nav-group">API · ' + (state.llmEffective || 'mock') + '</div>'
+    : '<div class="nav-group" style="color:#c62828">API 未连接</div>';
+  const meChip = '<div class="nav-group">本机 · ' + esc(p.displayName || '未命名') + '</div>';
+  document.getElementById('nav').innerHTML = status + html + meChip;
+}
+
+function go(page, extra) {
+  state.page = page;
+  state.notebookDetailExpId = null;
+  state.debriefDetailId = null;
+  state.debriefForm = null;
+  state.quiz = null;
+  state.expForm = null;
+  state.resumeParse = null;
+  if (page === 'interview' && extra) {
+    state.interview.expId = extra;
+    state.interview.phase = 'idle';
+    state.interview.activeNodeId = null;
+  }
+  if (page === 'notebook-detail' && extra) {
+    state.notebookDetailExpId = extra;
+  }
+  if (page === 'knowledge' && extra) {
+    state.knowledgeFilter = extra;
+  }
+  if (page === 'debrief-detail' && extra) {
+    state.debriefDetailId = extra;
+  }
+  render();
+}
+
+function render() {
+  renderNav();
+  const main = document.getElementById('main');
+  const map = {
+    experience: renderExperience,
+    intro: renderIntro,
+    interview: renderInterview,
+    notebook: renderNotebook,
+    'notebook-detail': renderNotebookDetail,
+    knowledge: renderKnowledge,
+    debrief: renderDebrief,
+    'debrief-detail': renderDebriefDetail,
+    job: renderJob,
+    me: renderMe,
+  };
+  main.innerHTML = (map[state.page] || renderExperience)();
+  document.getElementById('modal-root').innerHTML =
+    (state.loading ? renderLoading() : '') +
+    (state.confirmDialog ? renderConfirmDialog() : '') +
+    (state.resumeParse ? renderResumeParseModal() : '') +
+    (state.addKnowledgeDraft ? renderAddKnowledgeModal() : '') +
+    (state.reviewItems ? renderReviewModal() : '') +
+    (state.introOverlay || '');
+}
+
+function renderLoading() {
+  const t = state.loading || '处理中…';
+  return `<div class="loading-mask">
+    <div class="spinner"></div>
+    <div class="loading-text">${esc(t)}</div>
+    <div class="bar-track"><div class="bar-fill"></div></div>
+    <p class="meta">请稍候，正在调用模型</p>
+  </div>`;
+}
+
+function showLoading(text) {
+  state.loading = text || '处理中…';
+  render();
+}
+
+function hideLoading() {
+  state.loading = null;
+}
+
+/* ========== 删除确认（按模块隔离；「今日内跳过」存 localStorage，跨日失效） ========== */
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function loadSkipMap() {
+  try {
+    const raw = localStorage.getItem(SKIP_DELETE_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    // 旧格式 { date: "YYYY-MM-DD" } → 丢弃，避免全局误伤其它模块
+    if (obj && typeof obj.date === 'string' && !Object.keys(DELETE_SCOPES).some(function (k) { return k in obj; })) {
+      localStorage.removeItem(SKIP_DELETE_KEY);
+      return {};
+    }
+    return obj && typeof obj === 'object' ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function shouldSkipDeleteConfirm(scope) {
+  if (!scope) return false;
+  const map = loadSkipMap();
+  return map[scope] === todayStr();
+}
+
+function setSkipDeleteConfirmToday(scope) {
+  if (!scope) return;
+  const map = loadSkipMap();
+  map[scope] = todayStr();
+  localStorage.setItem(SKIP_DELETE_KEY, JSON.stringify(map));
+}
+
+function clearSkipDeleteConfirm(scope) {
+  const map = loadSkipMap();
+  if (scope) delete map[scope];
+  else Object.keys(map).forEach(function (k) { delete map[k]; });
+  localStorage.setItem(SKIP_DELETE_KEY, JSON.stringify(map));
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return {
+      displayName: (obj && obj.displayName) || 'CHEN',
+      targetRole: (obj && obj.targetRole) || '',
+      note: (obj && obj.note) || '',
+    };
+  } catch (e) {
+    return { displayName: 'CHEN', targetRole: '', note: '' };
+  }
+}
+
+function saveProfile(partial) {
+  const cur = loadProfile();
+  const next = Object.assign({}, cur, partial || {});
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+  state.profile = next;
+}
+
+/**
+ * 删除前确认。opts.scope 必填，用于模块隔离跳过。
+ * opts: { scope, title, body, dangerLabel }
+ */
+function confirmDelete(opts) {
+  opts = opts || {};
+  const scope = opts.scope || 'experience';
+  if (shouldSkipDeleteConfirm(scope)) return Promise.resolve(true);
+  const scopeLabel = DELETE_SCOPES[scope] || scope;
+  return new Promise(function (resolve) {
+    state.confirmDialog = {
+      scope: scope,
+      title: opts.title || '确认删除？',
+      body: opts.body || '删除后无法恢复。',
+      dangerLabel: opts.dangerLabel || '确认删除',
+      scopeLabel: scopeLabel,
+      skipChecked: false,
+      resolve: resolve,
+    };
+    render();
+  });
+}
+
+function renderConfirmDialog() {
+  const d = state.confirmDialog;
+  if (!d) return '';
+  return `<div class="confirm-modal" onclick="if(event.target===this)cancelConfirmDialog()">
+    <div class="confirm-panel">
+      <h3>${esc(d.title)}</h3>
+      <p style="line-height:1.5;color:#444;font-size:13px">${esc(d.body)}</p>
+      <label class="confirm-skip">
+        <input type="checkbox" id="confirm-skip-today" ${d.skipChecked ? 'checked' : ''} onchange="state.confirmDialog.skipChecked=this.checked" />
+        <span>下次直接删除不再提示
+          <span class="hint">（仅「${esc(d.scopeLabel)}」今日有效；其它模块仍会确认，明天也会再次确认）</span>
+        </span>
+      </label>
+      <div style="margin-top:16px;text-align:right">
+        <button class="btn" onclick="cancelConfirmDialog()">取消</button>
+        <button class="btn btn-danger-solid" onclick="acceptConfirmDialog()">${esc(d.dangerLabel)}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function cancelConfirmDialog() {
+  const d = state.confirmDialog;
+  state.confirmDialog = null;
+  if (d && d.resolve) d.resolve(false);
+  render();
+}
+
+function acceptConfirmDialog() {
+  const d = state.confirmDialog;
+  if (!d) return;
+  const skipEl = document.getElementById('confirm-skip-today');
+  if ((skipEl && skipEl.checked) || d.skipChecked) setSkipDeleteConfirmToday(d.scope);
+  state.confirmDialog = null;
+  if (d.resolve) d.resolve(true);
+  render();
+}
+
+/* ========== ① 经历库 ========== */
+function renderExperience() {
+  if (state.expForm) return renderExpForm();
+
+  return `
+    <h1 class="page-title">① 我的经历库</h1>
+    <div class="flex-between" style="margin-bottom:12px;gap:12px;flex-wrap:wrap">
+      <div class="upload" style="flex:1;margin:0"
+        onclick="document.getElementById('resume-file').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="onResumeDrop(event)">
+        📄 拖拽或点击上传 PDF / Word（.docx）
+        <div class="meta" style="margin-top:6px">解析后可勾选导入；原文件不落盘。扫描件请改粘贴文本。</div>
+      </div>
+      <input type="file" id="resume-file" class="hidden" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onchange="onResumeFileSelected(event)" />
+      <button class="btn btn-primary" onclick="openExpForm(null)">＋ 手动添加经历</button>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="form-row" style="margin:0">
+        <label>或粘贴简历文本 <span class="hint">没有可选中文字的 PDF 时用这个</span></label>
+        <textarea id="resume-paste" placeholder="把实习/项目那段贴进来…" style="min-height:72px"></textarea>
+        <button class="btn btn-sm" style="margin-top:8px" onclick="parseResumeText()">解析粘贴文本</button>
+      </div>
+    </div>
+    ${state.experiences.map(e => `
+      <div class="card">
+        <div class="flex-between">
+          <div>
+            <strong>${esc(e.title)}</strong>
+            <span class="badge" style="margin-left:6px">${esc(e.type || '经历')}</span>
+            <div class="meta" style="margin-top:4px">${esc(e.period)} · ${esc(e.role)}</div>
+          </div>
+          <div>
+            <button class="btn btn-sm" onclick="openExpForm('${e.id}')">编辑</button>
+            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteExperience('${e.id}')">删除</button>
+            <button class="btn btn-primary btn-sm" onclick="go('interview','${e.id}')">进入模拟面试</button>
+          </div>
+        </div>
+        <p style="margin:10px 0;line-height:1.5">${esc(e.summary)}</p>
+        ${e.metrics ? `<p class="match-ok" style="font-size:13px">📊 ${esc(e.metrics)}</p>` : ''}
+        ${!e.metrics || e.missingHint ? `<p class="meta" style="margin-top:4px">⚠ ${esc(e.missingHint || '建议补充量化结果，面试容易被追问')}</p>` : ''}
+        <div class="chip-row">${(e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+      </div>
+    `).join('')}`;
+}
+
+function onResumeDrop(ev) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag');
+  const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+  if (f) parseResumeFile(f);
+}
+
+function onResumeFileSelected(ev) {
+  const f = ev.target.files && ev.target.files[0];
+  ev.target.value = '';
+  if (f) parseResumeFile(f);
+}
+
+async function parseResumeFile(file) {
+  const paste = (document.getElementById('resume-paste') || {}).value || '';
+  const fd = new FormData();
+  fd.append('file', file);
+  if (paste.trim()) fd.append('text', paste.trim());
+  await runResumeParse(fd);
+}
+
+async function parseResumeText() {
+  const paste = (document.getElementById('resume-paste') || {}).value || '';
+  if (!paste.trim()) { toast('请先粘贴简历文本'); return; }
+  const fd = new FormData();
+  fd.append('text', paste.trim());
+  await runResumeParse(fd);
+}
+
+async function runResumeParse(formData) {
+  if (!state.apiOnline) { toast('后端未连接'); return; }
+  showLoading('正在解析简历…');
+  try {
+    const res = await fetch(API_BASE + '/api/experiences/parse', { method: 'POST', body: formData });
+    if (!res.ok) {
+      let msg = res.status + ' ' + res.statusText;
+      try { msg = await res.text(); } catch (e) {}
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    hideLoading();
+    state.resumeParse = {
+      items: (data.items || []).map(function (it, i) {
+        return Object.assign({}, it, { _selected: true, _idx: i });
+      }),
+      warning: data.warning || '',
+      llm_effective: data.llm_effective || 'mock',
+      char_count: data.char_count || 0,
+      text_preview: data.text_preview || '',
+    };
+    toast('解析出 ' + state.resumeParse.items.length + ' 条 · ' + (data.llm_effective || 'mock'));
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('解析失败：' + e.message);
+    render();
+  }
+}
+
+function renderResumeParseModal() {
+  const p = state.resumeParse;
+  if (!p) return '';
+  const selected = p.items.filter(function (x) { return x._selected; }).length;
+  return `<div class="parse-modal" onclick="if(event.target===this){state.resumeParse=null;render()}">
+    <div class="parse-panel">
+      <div class="flex-between" style="margin-bottom:12px">
+        <h2 style="font-size:16px">确认导入经历（${selected}/${p.items.length}）</h2>
+        <button class="btn btn-sm" onclick="state.resumeParse=null;render()">关闭</button>
+      </div>
+      <p class="meta" style="margin-bottom:10px">
+        抽字 ${p.char_count} 字 · LLM=${esc(p.llm_effective)}
+        ${p.warning ? ' · ⚠ ' + esc(p.warning) : ''}
+        · 请勾选要导入的条目，导入后仍可编辑
+      </p>
+      ${p.items.map(function (it, i) {
+        return `<div class="parse-card ${it._selected ? 'selected' : ''}">
+          <label class="row">
+            <input type="checkbox" ${it._selected ? 'checked' : ''} onchange="toggleParseItem(${i}, this.checked)" />
+            <div style="flex:1">
+              <strong>${esc(it.title || (it.company + ' · ' + it.role))}</strong>
+              <span class="badge" style="margin-left:6px">${esc(it.type || '经历')}</span>
+              <div class="meta" style="margin-top:4px">${esc(it.period)} · ${esc(it.role)} · ${esc(it.company)}</div>
+              <p style="margin:8px 0;line-height:1.45">${esc(it.summary)}</p>
+              ${it.metrics ? `<p class="match-ok" style="font-size:13px">📊 ${esc(it.metrics)}</p>` : ''}
+              ${it.missing_hint ? `<p class="meta">⚠ ${esc(it.missing_hint)}</p>` : ''}
+              <div class="chip-row">${(it.tags || []).map(function (t) { return `<span class="tag">${esc(t)}</span>`; }).join('')}</div>
+            </div>
+          </label>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:12px">
+        <button class="btn" onclick="state.resumeParse.items.forEach(function(x){x._selected=true});render()">全选</button>
+        <button class="btn" onclick="state.resumeParse.items.forEach(function(x){x._selected=false});render()">全不选</button>
+        <button class="btn btn-primary" onclick="importParsedExperiences()" ${selected ? '' : 'disabled'}>导入选中 ${selected} 条</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleParseItem(i, checked) {
+  if (!state.resumeParse || !state.resumeParse.items[i]) return;
+  state.resumeParse.items[i]._selected = !!checked;
+  render();
+}
+
+async function importParsedExperiences() {
+  const p = state.resumeParse;
+  if (!p) return;
+  const items = p.items.filter(function (x) { return x._selected; }).map(function (x) {
+    return {
+      type: x.type || '实习',
+      company: x.company || '',
+      role: x.role || '',
+      period: x.period || '',
+      summary: x.summary || '',
+      metrics: x.metrics || '',
+      extra: x.extra || '',
+      tags: x.tags || [],
+      title: x.title || null,
+    };
+  });
+  if (!items.length) { toast('请至少勾选一条'); return; }
+  showLoading('正在导入…');
+  try {
+    const data = await api('/api/experiences/import', {
+      method: 'POST',
+      body: JSON.stringify({ items: items }),
+    });
+    hideLoading();
+    state.resumeParse = null;
+    await refreshAll();
+    toast('已导入 ' + (data.count || items.length) + ' 条经历');
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('导入失败：' + e.message);
+    render();
+  }
+}
+
+function openExpForm(id) {
+  if (id) {
+    const e = getExpById(id);
+    state.expForm = { ...e, tagsStr: (e.tags || []).join(', '), isNew: false };
+  } else {
+    state.expForm = {
+      id: '', type: '实习', company: '', role: '', periodStart: '', periodEnd: '',
+      summary: '', metrics: '', extra: '', tagsStr: '', isNew: true,
+    };
+  }
+  render();
+}
+
+function renderExpForm() {
+  const f = state.expForm;
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="state.expForm=null;render()">← 返回</button>
+      ${f.isNew ? '手动添加经历' : '编辑经历'}
+    </h1>
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>类型</label>
+          <select id="f-type">
+            ${['实习','项目','校园','其他'].map(t => `<option ${f.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-row">
+          <label>公司 / 项目名称 *</label>
+          <input type="text" id="f-company" value="${esc(f.company || f.title || '')}" placeholder="如：XX公司 / 校园二手项目" />
+        </div>
+        <div class="form-row">
+          <label>担任角色 *</label>
+          <input type="text" id="f-role" value="${esc(f.role || '')}" placeholder="如：产品实习生" />
+        </div>
+        <div class="form-row">
+          <label>时长 *</label>
+          <input type="text" id="f-period" value="${esc(f.period || '')}" placeholder="如：2024.06 - 2024.09" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>主要工作内容 *</label>
+        <textarea id="f-summary" placeholder="你做了什么、怎么做的…">${esc(f.summary || '')}</textarea>
+      </div>
+      <div class="form-row">
+        <label>关键成果 / 量化数据 <span class="hint">强烈建议填写</span></label>
+        <input type="text" id="f-metrics" value="${esc(f.metrics || '')}" placeholder="如：DAU +12%，周期缩短 20%" />
+      </div>
+      <div class="form-row">
+        <label>补充细节 <span class="hint">简历上没写但想聊的</span></label>
+        <textarea id="f-extra" style="min-height:60px">${esc(f.extra || '')}</textarea>
+      </div>
+      <div class="form-row">
+        <label>标签 <span class="hint">逗号分隔，也可点「AI 生成」</span></label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="f-tags" value="${esc(f.tagsStr || '')}" placeholder="数据分析, 0-1项目" />
+          <button class="btn btn-sm" type="button" onclick="aiSuggestExpTags()">AI生成</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveExpForm()">保存</button>
+      <button class="btn" onclick="state.expForm=null;render()">取消</button>
+      ${!f.isNew ? `<button class="btn btn-danger" onclick="deleteExperience('${f.id}')">删除此经历</button>` : ''}
+    </div>`;
+}
+
+function aiSuggestExpTags() {
+  const company = document.getElementById('f-company').value;
+  const summary = document.getElementById('f-summary').value;
+  const text = company + ' ' + summary;
+  let tags = [];
+  if (/数据|分析|指标/i.test(text)) tags.push('数据分析');
+  if (/0-1|从零|新建/i.test(text)) tags.push('0-1项目');
+  if (/Python|看板|可视化/i.test(text)) tags.push('Python', '可视化');
+  if (/产品/i.test(text)) tags.push('产品');
+  if (!tags.length) tags = ['待补充'];
+  document.getElementById('f-tags').value = tags.join(', ');
+  toast('已根据内容生成标签（Demo）');
+}
+
+async function saveExpForm() {
+  const type = document.getElementById('f-type').value;
+  const company = document.getElementById('f-company').value.trim();
+  const role = document.getElementById('f-role').value.trim();
+  const period = document.getElementById('f-period').value.trim();
+  const summary = document.getElementById('f-summary').value.trim();
+  const metrics = document.getElementById('f-metrics').value.trim();
+  const extra = document.getElementById('f-extra').value.trim();
+  const tags = document.getElementById('f-tags').value.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+
+  if (!company || !role || !period || !summary) {
+    toast('请填写带 * 的必填项');
+    return;
+  }
+
+  const payload = { type, company, role, period, summary, metrics, extra, tags, title: `${company} · ${role}` };
+  try {
+    if (state.expForm.isNew) {
+      const created = await api('/api/experiences', { method: 'POST', body: JSON.stringify(payload) });
+      replaceExp(mapExp(created));
+      toast('经历已添加（已写入后端）');
+    } else {
+      const updated = await api('/api/experiences/' + state.expForm.id, {
+        method: 'PUT', body: JSON.stringify(payload),
+      });
+      replaceExp(mapExp(updated));
+      toast('经历已更新（已写入后端）');
+    }
+    state.expForm = null;
+    render();
+  } catch (e) {
+    toast('保存失败：' + e.message);
+  }
+}
+
+async function deleteExperience(expId, scope) {
+  const exp = getExpById(expId);
+  if (!exp) { toast('经历不存在'); return; }
+  const ok = await confirmDelete({
+    scope: scope || 'experience',
+    title: '删除这段经历？',
+    body: '将删除「' + (exp.title || exp.company) + '」及其全部追问树记录，无法恢复。',
+    dangerLabel: '确认删除',
+  });
+  if (!ok) return;
+  try {
+    await api('/api/experiences/' + expId, { method: 'DELETE' });
+    state.experiences = state.experiences.filter(function (e) { return e.id !== expId; });
+    if (state.interview.expId === expId) {
+      state.interview.expId = state.experiences[0] ? state.experiences[0].id : '';
+      state.interview.phase = 'idle';
+      state.interview.activeNodeId = null;
+    }
+    if (state.expForm && state.expForm.id === expId) state.expForm = null;
+    if (state.notebookDetailExpId === expId) {
+      state.notebookDetailExpId = null;
+      state.page = (scope === 'notebook') ? 'notebook' : 'experience';
+    }
+    toast('经历已删除');
+    render();
+  } catch (e) {
+    toast('删除失败：' + e.message);
+  }
+}
+
+/* ========== ② 自我介绍 ========== */
+function renderIntro() {
+  return `
+    <h1 class="page-title">② 自我介绍打磨</h1>
+    <button class="btn btn-primary" onclick="state.introContent='您好，我是 CHEN，产品方向求职者，有数据分析与 0-1 项目经验…';toast('已生成初稿');render()">AI 生成初稿</button>
+    <button class="btn" onclick="openIntroOverlay('polish')">我自己写，AI 润色</button>
+    <button class="btn" onclick="openIntroOverlay('guide')">AI 引导提问</button>
+    <div class="card" style="margin-top:16px">
+      <textarea oninput="state.introContent=this.value">${esc(state.introContent)}</textarea>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="toast('定稿已保存')">保存定稿</button>
+      <button class="btn btn-danger" style="margin-top:8px" onclick="clearIntro()">清空自我介绍</button>
+    </div>`;
+}
+
+async function clearIntro() {
+  const ok = await confirmDelete({
+    scope: 'intro',
+    title: '清空自我介绍？',
+    body: '将清空当前定稿文案。这只影响本机页面内容，不会删经历库。',
+    dangerLabel: '确认清空',
+  });
+  if (!ok) return;
+  state.introContent = '';
+  toast('自我介绍已清空');
+  render();
+}
+
+function openIntroOverlay(mode) {
+  state.introOverlay = `<div class="overlay" onclick="closeOverlay()"><div class="overlay-panel" onclick="event.stopPropagation()">
+    <h3>${mode === 'polish' ? 'AI 润色' : 'AI 引导提问'}</h3>
+    <p style="margin:16px 0;line-height:1.5">AI：${mode === 'polish' ? '已优化表达，突出数据成果与协作能力。' : '你最想突出的 1 个能力是什么？'}</p>
+    <button class="btn btn-primary" onclick="state.introContent+='\\n（AI 处理后）';closeOverlay();toast('已填入编辑区')">完成并填入</button>
+  </div></div>`;
+  render();
+}
+function closeOverlay() { state.introOverlay = ''; render(); }
+
+/* ========== ③ 模拟面试 ========== */
+function renderInterview() {
+  const iv = state.interview;
+  const exp = getExp();
+  if (!exp) return `<div class="empty">请先在经历库添加经历</div>`;
+  const node = iv.activeNodeId ? findNode(exp.qaTree, iv.activeNodeId) : null;
+  const inKnowledge = node && state.knowledge.some(k => k.source?.expId === exp.id && k.source?.nodeId === node.nodeId);
+
+  return `
+    <h1 class="page-title">③ 模拟面试 <span class="badge">${esc(iv.phase)}</span></h1>
+    <div class="interview">
+      <div class="col-left">
+        <select onchange="state.interview.expId=this.value;state.interview.phase='idle';state.interview.activeNodeId=null;render()">
+          ${state.experiences.map(e => `<option value="${e.id}" ${e.id===iv.expId?'selected':''}>${esc(e.title)}</option>`).join('')}
+        </select>
+        ${iv.phase === 'idle' ? `
+          <div class="empty">
+            <p>AI 准备就绪</p>
+            <button class="btn btn-primary" onclick="startInterview()">开始提问</button>
+          </div>` : `
+          <div class="question-box">${esc(iv.currentQ)}</div>
+          ${node?.triggerFrom ? `<p class="meta" style="margin-bottom:8px">🔗 ${esc(node.triggerFrom)}</p>` : ''}
+          <div style="margin-bottom:12px">
+            <button class="btn ${iv.mode==='user_answered'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('user_answered')">自己答</button>
+            <button class="btn ${iv.mode==='ai_generated'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('ai_generated')">AI 代答</button>
+            <button class="btn ${iv.mode==='framework_only'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('framework_only')">看框架再填</button>
+          </div>
+          ${iv.phase==='answering'||iv.phase==='feedback' ? `
+            <textarea ${iv.phase==='feedback'?'disabled':''} oninput="state.interview.draft=this.value">${esc(iv.draft)}</textarea>
+            ${iv.phase==='answering' ? `<button class="btn btn-primary" style="margin-top:8px" onclick="submitAnswer()">提交回答</button>` : ''}
+          ` : ''}
+          ${iv.phase==='feedback' && node ? `
+            <div class="feedback"><strong>AI 点评</strong><p style="margin-top:6px">${esc(node.aiFeedback||'')}</p>
+              ${(node.knowledgeTags||[]).map(t=>`<span class="tag tag-l1">${esc(t)}</span>`).join('')}
+            </div>
+            <div style="margin-top:auto;padding-top:16px;border-top:1px solid #eee">
+              <p class="meta" style="margin-bottom:8px">下一步（当前节点 ${esc(iv.activeNodeId||iv.branchFrom)}）</p>
+              <p class="meta" style="margin-bottom:8px">深挖/发散 → ↓子节点（q1.1→q1.1.1）；换角度 → →同级（q1.1→q1.2）</p>
+              <button class="btn" onclick="nextStep('deep_dive')" title="本题下继续追问">深挖（↓子节点）</button>
+              <button class="btn" onclick="nextStep('new_angle')" title="同项目换侧面，同级新开一条">换角度（→同级）</button>
+              <button class="btn" onclick="nextStep('diverge')" title="抓住上一答里的词追问">发散追问（↓子节点）</button>
+              <button class="btn" onclick="nextStep('switch_exp')">换经历</button>
+              <button class="btn" onclick="nextStep('end')">结束</button>
+            </div>
+          ` : ''}
+        `}
+      </div>
+      <div class="col-right">
+        <h4 style="margin-bottom:10px">追问树（点击跳转 & 分支）</h4>
+        ${exp.qaTree.length ? renderTree(exp.qaTree, iv.activeNodeId) : '<p class="meta">开始面试后展开</p>'}
+        ${node ? `
+          <hr class="divider" />
+          <button class="btn btn-sm ${node.marks.includes('star')?'btn-active':''}" onclick="toggleMark('star')">⭐ 重点</button>
+          <button class="btn btn-sm ${node.marks.includes('practice')?'btn-active':''}" onclick="toggleMark('practice')">✍️ 待练习</button>
+          <button class="btn btn-sm ${inKnowledge?'btn-active':''}" onclick="openAddKnowledge('${exp.id}','${node.nodeId}')">
+            ${inKnowledge ? '✓ 已在知识汇总' : '📚 加入知识汇总'}
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteTreeNode('${exp.id}','${node.nodeId}')">删除本题</button>
+        ` : ''}
+        <button class="btn btn-sm" style="margin-top:16px" onclick="go('notebook-detail','${exp.id}')">查看本经历笔记 →</button>
+      </div>
+    </div>`;
+}
+
+function renderTree(tree, activeId, depth = 0) {
+  return (tree || []).map(n => `
+    <div style="margin-left:${depth * 14}px">
+      <div class="tree-node ${activeId===n.nodeId?'active':''}" onclick="selectNode('${n.nodeId}')">
+        <div class="tree-label">
+          <small style="color:#888">${esc(n.nodeId)}</small> ${esc(n.question.slice(0, 36))}${n.question.length>36?'…':''}
+          ${n.answer ? '<span class="badge">已答</span>' : ''}
+        </div>
+        <button type="button" class="tree-del" title="删除本题及子追问" onclick="event.stopPropagation();deleteTreeNode(state.interview.expId,'${n.nodeId}')">×</button>
+      </div>
+      ${renderTree(n.children, activeId, depth + 1)}
+    </div>`).join('');
+}
+
+async function deleteTreeNode(expId, nodeId) {
+  const exp = getExpById(expId);
+  const node = exp ? findNode(exp.qaTree, nodeId) : null;
+  if (!node) { toast('节点不存在'); return; }
+  const childCount = countSubtreeNodes(node) - 1;
+  const ok = await confirmDelete({
+    scope: 'tree',
+    title: '删除这道题？',
+    body: '将删除「' + nodeId + '」' + (childCount > 0 ? '及其 ' + childCount + ' 个子追问' : '') + '，无法恢复。',
+    dangerLabel: '确认删除',
+  });
+  if (!ok) return;
+  try {
+    await api('/api/interview/' + expId + '/nodes/' + encodeURIComponent(nodeId), { method: 'DELETE' });
+    const full = await api('/api/experiences/' + expId);
+    const mapped = mapExp(full);
+    replaceExp(mapped);
+    const iv = state.interview;
+    if (iv.expId === expId && !findNode(mapped.qaTree, iv.activeNodeId)) {
+      iv.activeNodeId = null;
+      iv.phase = 'idle';
+      iv.currentQ = '';
+      iv.draft = '';
+      iv.mode = null;
+      iv.branchFrom = null;
+    }
+    toast('已删除 ' + nodeId);
+    render();
+  } catch (e) {
+    toast('删除失败：' + e.message);
+  }
+}
+
+function countSubtreeNodes(node) {
+  let n = 1;
+  (node.children || []).forEach(function (c) { n += countSubtreeNodes(c); });
+  return n;
+}
+
+async function startInterview() {
+  const iv = state.interview;
+  try {
+    toast('请求中…');
+    const data = await api('/api/interview/' + iv.expId + '/start', { method: 'POST', body: '{}' });
+    const full = await api('/api/experiences/' + iv.expId);
+    replaceExp(mapExp(full));
+    iv.activeNodeId = data.active_node_id;
+    iv.currentQ = data.question;
+    iv.phase = data.phase;
+    iv.draft = (data.node && data.node.answer) || '';
+    iv.branchFrom = null;
+    iv.mode = null;
+    render();
+  } catch (e) {
+    toast('开始失败：' + e.message);
+  }
+}
+
+function selectNode(id) {
+  const exp = getExp();
+  const n = findNode(exp.qaTree, id);
+  if (!n) return;
+  const iv = state.interview;
+  iv.activeNodeId = id; iv.currentQ = n.question; iv.draft = n.answer || '';
+  iv.branchFrom = id; iv.mode = n.answerMode || null;
+  iv.phase = n.answer ? 'feedback' : 'question';
+  render();
+}
+
+async function pickMode(mode) {
+  const iv = state.interview;
+  iv.mode = mode;
+  iv.phase = 'answering';
+  if (mode === 'user_answered') {
+    iv.draft = '';
+    render();
+    return;
+  }
+  if (!iv.activeNodeId) { toast('请先开始提问'); return; }
+  try {
+    showLoading(mode === 'ai_generated' ? 'AI 正在按本题生成参考答案…' : 'AI 正在生成答题框架…');
+    const data = await api('/api/interview/' + iv.expId + '/draft', {
+      method: 'POST',
+      body: JSON.stringify({ node_id: iv.activeNodeId, mode }),
+    });
+    iv.draft = data.draft || '';
+    hideLoading();
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('生成失败：' + e.message);
+    render();
+  }
+}
+
+async function submitAnswer() {
+  const iv = state.interview;
+  try {
+    const data = await api('/api/interview/' + iv.expId + '/answer', {
+      method: 'POST',
+      body: JSON.stringify({
+        node_id: iv.activeNodeId,
+        answer: iv.draft,
+        answer_mode: iv.mode || 'user_answered',
+      }),
+    });
+    const full = await api('/api/experiences/' + iv.expId);
+    replaceExp(mapExp(full));
+    iv.phase = 'feedback';
+    iv.branchFrom = iv.activeNodeId;
+    render();
+    toast(data.ai_feedback ? '已点评并落库' : '已提交');
+  } catch (e) {
+    toast('提交失败：' + e.message);
+  }
+}
+
+async function nextStep(action) {
+  const iv = state.interview;
+  if (action === 'end') { iv.phase = 'idle'; iv.activeNodeId = null; render(); return; }
+  if (action === 'switch_exp') {
+    const others = state.experiences.filter(e => e.id !== iv.expId);
+    if (others.length) { iv.expId = others[0].id; iv.phase = 'idle'; iv.activeNodeId = null; }
+    render(); return;
+  }
+  // 必须以「当前正在看的节点」为基准（不要用可能过期的 branchFrom 优先）
+  // 后端：深挖/发散 → 子节点；换角度 → 同级兄弟
+  const fromNodeId = iv.activeNodeId || iv.branchFrom;
+  if (!fromNodeId) { toast('请先选中一个节点'); return; }
+  try {
+    const data = await api('/api/interview/' + iv.expId + '/next', {
+      method: 'POST',
+      body: JSON.stringify({ from_node_id: fromNodeId, action }),
+    });
+    const full = await api('/api/experiences/' + iv.expId);
+    replaceExp(mapExp(full));
+    iv.activeNodeId = data.active_node_id;
+    iv.currentQ = data.question;
+    iv.draft = '';
+    iv.mode = null;
+    iv.phase = data.phase || 'question';
+    iv.branchFrom = data.active_node_id;
+    const createdId = (data.new_node && data.new_node.nodeId) || data.active_node_id;
+    toast((action === 'new_angle' ? '已同级分叉 → ' : '已向下追问 → ') + createdId);
+    render();
+  } catch (e) {
+    toast('下一步失败：' + e.message);
+  }
+}
+
+async function toggleMark(m) {
+  const exp = getExp();
+  const n = findNode(exp.qaTree, state.interview.activeNodeId);
+  if (!n) return;
+  const marks = n.marks.includes(m) ? n.marks.filter(x => x !== m) : [...n.marks, m];
+  try {
+    await api('/api/interview/' + exp.id + '/nodes/' + n.nodeId + '/marks', {
+      method: 'PATCH',
+      body: JSON.stringify({ marks }),
+    });
+    const full = await api('/api/experiences/' + exp.id);
+    replaceExp(mapExp(full));
+    render();
+  } catch (e) {
+    toast('标记失败：' + e.message);
+  }
+}
+
+/* ========== 加入知识汇总 ========== */
+function openAddKnowledge(expId, nodeId, manual) {
+  if (manual) {
+    state.addKnowledgeDraft = {
+      id: null, expId: '', nodeId: '',
+      question: '', myAnswer: '', referenceAnswer: '',
+      tagsStr: '行为面试', note: '', status: '待巩固',
+    };
+    render();
+    return;
+  }
+  const existing = state.knowledge.find(k => k.source?.expId === expId && k.source?.nodeId === nodeId);
+  if (existing) {
+    state.addKnowledgeDraft = {
+      id: existing.id,
+      expId, nodeId,
+      question: existing.question,
+      myAnswer: existing.myAnswer || '',
+      referenceAnswer: existing.referenceAnswer || '',
+      tagsStr: (existing.tags || []).join(' · '),
+      note: existing.note || '',
+      status: existing.status || '待巩固',
+    };
+  } else {
+    const exp = getExpById(expId);
+    const n = findNode(exp.qaTree, nodeId);
+    const tags = n.knowledgeTags || guessKnowledgeTags(n.question);
+    state.addKnowledgeDraft = {
+      id: null, expId, nodeId,
+      question: n.question,
+      myAnswer: n.answer || '',
+      referenceAnswer: n.answerMode === 'ai_generated' ? (n.answer || '') : '',
+      tagsStr: tags.join(' · '),
+      note: '', status: '待巩固',
+    };
+  }
+  render();
+}
+
+function renderAddKnowledgeModal() {
+  const d = state.addKnowledgeDraft;
+  return `<div class="modal-bg" onclick="state.addKnowledgeDraft=null;render()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom:14px">${d.id ? '编辑知识条目' : '加入知识汇总'}</h3>
+      <div class="form-row"><label>问题</label><textarea id="k-q">${esc(d.question)}</textarea></div>
+      <div class="form-row"><label>我的回答</label><textarea id="k-my">${esc(d.myAnswer)}</textarea></div>
+      <div class="form-row"><label>参考答案</label><textarea id="k-ref">${esc(d.referenceAnswer)}</textarea></div>
+      <div class="form-row">
+        <label>标签 <span class="hint">一级固定 · 二三级可改，用 · 分隔</span></label>
+        <input type="text" id="k-tags" value="${esc(d.tagsStr)}" />
+        <div class="chip-row" style="margin-top:6px">
+          ${L1_TAGS.map(t => `<span class="tag clickable" onclick="document.getElementById('k-tags').value='${t}'">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="form-row"><label>笔记</label><input type="text" id="k-note" value="${esc(d.note)}" /></div>
+      <div class="form-row"><label>状态</label>
+        <select id="k-status">
+          <option ${d.status==='待巩固'?'selected':''}>待巩固</option>
+          <option ${d.status==='已掌握'?'selected':''}>已掌握</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveKnowledge()">保存到知识汇总</button>
+      ${d.id ? `<button class="btn btn-danger" onclick="deleteKnowledge('${d.id}')">删除</button>` : ''}
+      <button class="btn" onclick="state.addKnowledgeDraft=null;render()">取消</button>
+    </div>
+  </div>`;
+}
+
+async function saveKnowledge() {
+  const d = state.addKnowledgeDraft;
+  const payload = {
+    question: document.getElementById('k-q').value.trim(),
+    my_answer: document.getElementById('k-my').value.trim(),
+    reference_answer: document.getElementById('k-ref').value.trim(),
+    tags: document.getElementById('k-tags').value.split(/[·•,，]/).map(s => s.trim()).filter(Boolean),
+    note: document.getElementById('k-note').value.trim(),
+    status: document.getElementById('k-status').value,
+    source_exp_id: d.expId || null,
+    source_node_id: d.nodeId || null,
+  };
+  if (!payload.question) { toast('问题不能为空'); return; }
+  try {
+    if (d.id) {
+      const updated = await api('/api/knowledge/' + d.id, { method: 'PUT', body: JSON.stringify(payload) });
+      const mapped = mapKnowledge(updated);
+      const i = state.knowledge.findIndex(k => k.id === d.id);
+      if (i >= 0) state.knowledge[i] = mapped;
+    } else {
+      const created = await api('/api/knowledge', { method: 'POST', body: JSON.stringify(payload) });
+      state.knowledge.unshift(mapKnowledge(created));
+    }
+    state.addKnowledgeDraft = null;
+    toast('已保存到知识汇总（后端）');
+    render();
+  } catch (e) {
+    toast('保存失败：' + e.message);
+  }
+}
+
+/* ========== ④ 面试笔记本 ========== */
+function renderNotebook() {
+  return `
+    <h1 class="page-title">④ 面试笔记本</h1>
+    <p class="meta" style="margin-bottom:12px">自我介绍可展开；经历点开进入详情页（追问树 + AI 归纳）</p>
+    <details class="card" open>
+      <summary>【自我介绍】定稿</summary>
+      <p style="padding:12px 0;line-height:1.6;white-space:pre-wrap">${state.introContent ? esc(state.introContent) : '（空）'}</p>
+      <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();clearIntro()">清空自我介绍</button>
+    </details>
+    ${state.experiences.map(e => {
+      const n = countNodes(e.qaTree);
+      const tags = summarizeKnowledgeTags(e.qaTree);
+      return `
+        <div class="list-row" onclick="go('notebook-detail','${e.id}')">
+          <div>
+            <strong>${esc(e.title)}</strong>
+            <div class="meta" style="margin-top:4px">${n} 个问答节点 · ${tags.length} 类知识点</div>
+            <div class="chip-row">${tags.slice(0,3).map(t => `<span class="tag">${esc(t.label)} ×${t.count}</span>`).join('')}</div>
+          </div>
+          <div class="row-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-danger" onclick="deleteExperience('${e.id}','notebook')">删除</button>
+            <span class="meta">详情 →</span>
+          </div>
+        </div>`;
+    }).join('')}
+    <div style="margin-top:16px">
+      <button class="btn" onclick="toast('Demo：模拟导出 Word')">导出 Word</button>
+      <button class="btn btn-primary" onclick="openReview()">复习模式（待练习）</button>
+    </div>`;
+}
+
+function renderNotebookDetail() {
+  const exp = getExpById(state.notebookDetailExpId);
+  if (!exp) return `<div class="empty">未找到经历 <button class="btn" onclick="go('notebook')">返回</button></div>`;
+  const summary = summarizeKnowledgeTags(exp.qaTree);
+
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="go('notebook')">← 笔记本</button>
+      ${esc(exp.title)}
+    </h1>
+    <div class="summary-bar">
+      <strong>AI 归纳：本项目主要被问到</strong>
+      <div class="chip-row" style="margin-top:10px">
+        ${summary.length ? summary.map(t => {
+          const filterKey = t.parts.slice(0, 2).join(' · ');
+          return `<span class="tag clickable" title="跳转知识汇总" onclick="event.stopPropagation();go('knowledge','${esc(filterKey)}')">${esc(t.label)} ×${t.count}</span>`;
+        }).join('') : '<span class="meta">暂无问答，去模拟面试练一轮吧</span>'}
+      </div>
+      <p class="meta" style="margin-top:8px">点击标签 → 跳转⑤知识汇总并筛选</p>
+    </div>
+    <div class="flex-between" style="margin-bottom:12px">
+      <h3 style="font-size:15px">追问树（只读回顾）</h3>
+      <div>
+        <button class="btn btn-sm btn-danger" onclick="deleteExperience('${exp.id}','notebook')">删除此经历</button>
+        <button class="btn btn-primary btn-sm" onclick="go('interview','${exp.id}')">从此经历继续模拟</button>
+      </div>
+    </div>
+    ${exp.qaTree.length ? renderDetailTree(exp, exp.qaTree, 0) : '<div class="empty">暂无问答记录</div>'}
+  `;
+}
+
+function renderDetailTree(exp, tree, depth) {
+  return (tree || []).map(n => {
+    const inK = state.knowledge.some(k => k.source?.expId === exp.id && k.source?.nodeId === n.nodeId);
+    return `
+      <div class="notebook-qa" style="margin-left:${depth * 18}px">
+        <div><strong>${esc(n.nodeId)}</strong> ${esc(n.question)}</div>
+        ${n.answer ? `<div class="meta" style="margin-top:6px">答：${esc(n.answer)}</div>` : ''}
+        ${n.aiFeedback ? `<div class="meta" style="margin-top:4px">点评：${esc(n.aiFeedback)}</div>` : ''}
+        <div class="chip-row">
+          ${(n.knowledgeTags || n.labels || []).map(t => `<span class="tag tag-l1">${esc(t)}</span>`).join('')}
+          ${n.marks.includes('star') ? '<span class="tag">⭐重点</span>' : ''}
+          ${n.marks.includes('practice') ? '<span class="tag">✍️待练习</span>' : ''}
+        </div>
+        <button class="btn btn-sm" onclick="openAddKnowledge('${exp.id}','${n.nodeId}')">${inK ? '编辑知识条目' : '📚 加入知识汇总'}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTreeNode('${exp.id}','${n.nodeId}')">删除</button>
+      </div>
+      ${renderDetailTree(exp, n.children, depth + 1)}`;
+  }).join('');
+}
+
+function openReview() {
+  const items = [];
+  state.experiences.forEach(exp => {
+    collectNodes(exp.qaTree).forEach(n => {
+      if (n.marks.includes('practice')) {
+        items.push({
+          expId: exp.id,
+          expTitle: exp.title,
+          nodeId: n.nodeId,
+          question: n.question,
+          oldAnswer: n.answer || '',
+          newAnswer: '',
+          progress: '',
+          stillWeak: '',
+        });
+      }
+    });
+  });
+  state.reviewItems = items;
+  render();
+}
+
+function closeReview() {
+  state.reviewItems = null;
+  render();
+}
+
+function renderReviewModal() {
+  const items = state.reviewItems || [];
+  return `<div class="modal-bg"><div class="modal" onclick="event.stopPropagation()">
+    <h3 style="margin-bottom:12px">复习模式 · 待练习（按项目语境）</h3>
+    <p class="meta" style="margin-bottom:12px">提交后 AI 会对比上次回答，指出进步与仍可改进处</p>
+    ${items.length ? items.map((i, idx) => `<div class="card">
+      <small class="meta">${esc(i.expTitle)} · ${esc(i.nodeId)}</small>
+      <p><strong>${esc(i.question)}</strong></p>
+      <p style="background:#f5f5f5;padding:8px;margin:8px 0;font-size:13px">原答案：${esc(i.oldAnswer || '无')}</p>
+      <textarea id="rev-${idx}" placeholder="重新回答…">${esc(i.newAnswer)}</textarea>
+      ${i.progress || i.stillWeak ? `
+        <div class="feedback" style="margin-top:8px">
+          <p><strong>比上次进步：</strong>${esc(i.progress || '—')}</p>
+          <p style="margin-top:6px"><strong>还可以更好：</strong>${esc(i.stillWeak || '—')}</p>
+        </div>` : ''}
+    </div>`).join('') : '<p class="meta">暂无待练习题目。在模拟面试右栏给节点标「待练习」。</p>'}
+    <button class="btn btn-primary" onclick="finishReview()">${items.some(i => i.progress) ? '再分析一次' : '提交并请 AI 对比'}</button>
+    <button class="btn" onclick="closeReview()">关闭</button>
+  </div></div>`;
+}
+
+async function finishReview() {
+  const items = state.reviewItems || [];
+  if (!items.length) { closeReview(); return; }
+  items.forEach((i, idx) => {
+    const el = document.getElementById('rev-' + idx);
+    if (el) i.newAnswer = el.value.trim();
+  });
+  const todo = items.filter(i => i.newAnswer);
+  if (!todo.length) { toast('请至少填写一题再提交'); return; }
+  try {
+    showLoading('AI 正在对比你和上次的回答…');
+    for (const i of todo) {
+      const data = await api('/api/interview/' + i.expId + '/review', {
+        method: 'POST',
+        body: JSON.stringify({ node_id: i.nodeId, new_answer: i.newAnswer }),
+      });
+      i.progress = data.progress || '';
+      i.stillWeak = data.still_weak || '';
+    }
+    hideLoading();
+    render();
+    toast('对比完成，请看每题下方点评');
+  } catch (e) {
+    hideLoading();
+    toast('分析失败：' + e.message);
+    render();
+  }
+}
+
+/* ========== ⑤ 知识汇总 ========== */
+function renderKnowledge() {
+  if (state.quiz) return renderQuiz();
+
+  let list = state.knowledge;
+  if (state.knowledgeFilter) {
+    const f = state.knowledgeFilter;
+    list = list.filter(k => (k.tags || []).join(' · ').includes(f) || (k.tags || []).some(t => f.includes(t)));
+  }
+
+  const allTagKeys = [...new Set(state.knowledge.map(k => (k.tags || []).slice(0, 2).join(' · ')).filter(Boolean))];
+
+  return `
+    <h1 class="page-title">⑤ 知识汇总</h1>
+    <p class="meta" style="margin-bottom:12px">跨经历的知识点库。可从模拟面试/笔记本加入，也可手动添加。</p>
+    <div style="margin-bottom:12px">
+      <button class="btn btn-primary" onclick="openAddKnowledge(null,null,true)">＋ 手动添加</button>
+      <button class="btn" onclick="startQuiz()">🎲 随机提问</button>
+      ${state.knowledgeFilter ? `<button class="btn" onclick="state.knowledgeFilter=null;render()">清除筛选：${esc(state.knowledgeFilter)}</button>` : ''}
+    </div>
+    <div class="chip-row" style="margin-bottom:16px">
+      ${allTagKeys.map(t => `<span class="tag clickable ${state.knowledgeFilter===t?'btn-active':''}" onclick="state.knowledgeFilter='${esc(t)}';render()">${esc(t)}</span>`).join('')}
+    </div>
+    ${list.length === 0 ? '<div class="empty">暂无知识条目</div>' : list.map(k => {
+      const exp = k.source ? getExpById(k.source.expId) : null;
+      return `
+        <div class="card">
+          <div class="flex-between">
+            <div>
+              <span class="status-dot ${k.status==='已掌握'?'ok':'weak'}"></span>
+              <strong>${esc(k.question)}</strong>
+            </div>
+            <div>
+              <button class="btn btn-sm" onclick='editKnowledge("${k.id}")'>编辑</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteKnowledge('${k.id}')">删除</button>
+            </div>
+          </div>
+          <div class="chip-row" style="margin-top:8px">
+            ${(k.tags||[]).map(t => `<span class="tag tag-l1">${esc(t)}</span>`).join('')}
+            <span class="tag">${esc(k.status)}</span>
+          </div>
+          ${k.myAnswer ? `<p class="meta" style="margin-top:8px">我的回答：${esc(k.myAnswer.slice(0,80))}${k.myAnswer.length>80?'…':''}</p>` : ''}
+          ${k.note ? `<p class="meta">笔记：${esc(k.note)}</p>` : ''}
+          <p class="meta" style="margin-top:6px">来源：${exp ? esc(exp.title) + ' / ' + esc(k.source.nodeId) : '手动添加'} · ${esc(k.addedAt)}</p>
+        </div>`;
+    }).join('')}`;
+}
+
+async function deleteKnowledge(id) {
+  const k = state.knowledge.find(function (x) { return x.id === id; });
+  if (!k) { toast('条目不存在'); return; }
+  const ok = await confirmDelete({
+    scope: 'knowledge',
+    title: '删除这条知识？',
+    body: '将删除「' + (k.question || '').slice(0, 40) + '」，无法恢复。',
+    dangerLabel: '确认删除',
+  });
+  if (!ok) return;
+  try {
+    await api('/api/knowledge/' + id, { method: 'DELETE' });
+    state.knowledge = state.knowledge.filter(function (x) { return x.id !== id; });
+    if (state.addKnowledgeDraft && state.addKnowledgeDraft.id === id) state.addKnowledgeDraft = null;
+    toast('知识条目已删除');
+    render();
+  } catch (e) {
+    toast('删除失败：' + e.message);
+  }
+}
+
+function editKnowledge(id) {
+  const k = state.knowledge.find(x => x.id === id);
+  if (!k) return;
+  state.addKnowledgeDraft = {
+    id: k.id,
+    expId: k.source?.expId || '',
+    nodeId: k.source?.nodeId || '',
+    question: k.question,
+    myAnswer: k.myAnswer || '',
+    referenceAnswer: k.referenceAnswer || '',
+    tagsStr: (k.tags || []).join(' · '),
+    note: k.note || '',
+    status: k.status || '待巩固',
+  };
+  render();
+}
+
+function startQuiz() {
+  let pool = state.knowledge;
+  if (state.knowledgeFilter) {
+    const f = state.knowledgeFilter;
+    pool = pool.filter(k => (k.tags || []).join(' · ').includes(f));
+  }
+  if (!pool.length) { toast('没有可抽查的知识条目'); return; }
+  const item = pool[Math.floor(Math.random() * pool.length)];
+  state.quiz = { item, revealed: false, answer: '' };
+  render();
+}
+
+function renderQuiz() {
+  const { item, revealed, answer } = state.quiz;
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="state.quiz=null;render()">← 返回知识汇总</button>
+      随机提问
+    </h1>
+    <div class="quiz-card">
+      <div class="chip-row" style="margin-bottom:12px">${(item.tags||[]).map(t=>`<span class="tag tag-l1">${esc(t)}</span>`).join('')}</div>
+      <p style="font-size:18px;font-weight:600;line-height:1.5;margin-bottom:16px">${esc(item.question)}</p>
+      ${!revealed ? `
+        <textarea placeholder="先自己答一遍…" oninput="state.quiz.answer=this.value">${esc(answer)}</textarea>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="state.quiz.revealed=true;render()">查看原答案 / 参考</button>
+      ` : `
+        <div class="card" style="background:#f5f5f5">
+          <strong>我刚才的回答</strong>
+          <p style="margin-top:6px">${esc(answer) || '（未填写）'}</p>
+        </div>
+        <div class="card">
+          <strong>入库时的回答</strong>
+          <p style="margin-top:6px">${esc(item.myAnswer) || '（无）'}</p>
+        </div>
+        <div class="card">
+          <strong>参考答案</strong>
+          <p style="margin-top:6px">${esc(item.referenceAnswer) || '（无）'}</p>
+        </div>
+        <button class="btn" onclick="state.knowledge.find(k=>k.id==='${item.id}').status='已掌握';toast('已标记掌握');startQuiz()">掌握了，下一题</button>
+        <button class="btn btn-primary" onclick="state.knowledge.find(k=>k.id==='${item.id}').status='待巩固';startQuiz()">还要练，下一题</button>
+      `}
+    </div>`;
+}
+
+/* ========== ⑥ 真实面经 ========== */
+const SAMPLE_TRANSCRIPT = `面试官：请先做一下自我介绍。
+候选人：我是 CHEN，之前在 XX 公司做产品实习，负责增长相关的数据分析。
+
+面试官：增长项目里你怎么定义核心指标的？
+候选人：主要看了 DAU，差不多就定了。
+
+面试官：跨部门推进时遇到过分歧吗？
+候选人：有过排期冲突，后来开会对齐了一下，最后上线了，DAU 提升了大概 12%。`;
+
+function debriefTranscriptTip(openByDefault) {
+  return `
+    <details class="tip-box" ${openByDefault ? 'open' : ''}>
+      <summary>面试录音文本如何获取？</summary>
+      <ol>
+        <li>面试时开启<strong>手机自带录音机</strong>（多数机型可后台录音）。</li>
+        <li>结束后用系统自带的<strong>转文字 / 转录</strong>（一般免费），复制全文。</li>
+        <li>粘贴到下方输入框；建议整理成「面试官：… / 候选人：…」方便提取。</li>
+      </ol>
+      <p class="meta" style="margin-top:8px">本产品专注归档与弱答分析，暂不内置录音转写；用系统工具即可。</p>
+      <p class="meta" style="margin-top:4px">长度说明：整场粘贴可入库；真模型提取时默认只分析约前 2 万字（可在 .env 用 LLM_TRANSCRIPT_MAX_CHARS 调整），过长可先删寒暄/自我介绍重复段。</p>
+    </details>`;
+}
+
+function renderDebrief() {
+  if (state.debriefForm) return renderDebriefForm();
+  return `
+    <h1 class="page-title">⑥ 真实面经汇总</h1>
+    <p class="meta" style="margin-bottom:12px">粘贴面试录音转写文本 → 提取关键问答入库 → AI 分析弱答（标红）并给优化答法</p>
+    ${debriefTranscriptTip(!(state.debriefs || []).length)}
+    <button class="btn btn-primary" onclick="openDebriefForm()">＋ 录入面经转写</button>
+    ${!(state.debriefs || []).length ? '<div class="empty">暂无面经，先录入一段转写文本</div>' : ''}
+    ${(state.debriefs || []).map(d => {
+      const items = d.items || [];
+      const weak = items.filter(i => i.quality === 'weak').length;
+      const analyzed = items.filter(i => i.quality === 'good' || i.quality === 'weak').length;
+      return `
+        <div class="list-row" onclick="go('debrief-detail','${d.id}')">
+          <div>
+            <strong>${esc(d.title || '未命名面经')}</strong>
+            <div class="meta" style="margin-top:4px">${esc(d.company || '')} ${esc(d.role || '')} ${esc(d.interview_date || '')}</div>
+            <div class="meta">${items.length} 条问答 · 已分析 ${analyzed} · 弱答 ${weak}</div>
+          </div>
+          <div class="row-actions" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-danger" onclick="deleteDebrief('${d.id}')">删除</button>
+            <span class="meta">详情 →</span>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+function openDebriefForm() {
+  state.debriefForm = { title: '', company: '', role: '', interview_date: '', transcript: '' };
+  render();
+}
+
+function renderDebriefForm() {
+  const f = state.debriefForm;
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="state.debriefForm=null;render()">← 返回</button>
+      录入面经转写
+    </h1>
+    ${debriefTranscriptTip(true)}
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-row"><label>标题</label><input type="text" id="db-title" value="${esc(f.title)}" placeholder="如：字节一轮 · 产品" /></div>
+        <div class="form-row"><label>公司</label><input type="text" id="db-company" value="${esc(f.company)}" /></div>
+        <div class="form-row"><label>岗位</label><input type="text" id="db-role" value="${esc(f.role)}" /></div>
+        <div class="form-row"><label>日期</label><input type="text" id="db-date" value="${esc(f.interview_date)}" placeholder="2026-08-30" /></div>
+      </div>
+      <div class="form-row">
+        <label>转写文本 * <span class="hint">建议格式：面试官：… / 候选人：…</span></label>
+        <textarea id="db-transcript" style="min-height:220px" placeholder="${esc(SAMPLE_TRANSCRIPT)}">${esc(f.transcript)}</textarea>
+      </div>
+      <button class="btn btn-sm" type="button" onclick="fillSampleTranscript()">填入示例文本</button>
+      <button class="btn btn-primary" onclick="saveDebrief()">保存并提取问答</button>
+      <button class="btn" onclick="state.debriefForm=null;render()">取消</button>
+    </div>`;
+}
+
+function fillSampleTranscript() {
+  const el = document.getElementById('db-transcript');
+  if (el) el.value = SAMPLE_TRANSCRIPT;
+}
+
+async function saveDebrief() {
+  const payload = {
+    title: document.getElementById('db-title').value.trim(),
+    company: document.getElementById('db-company').value.trim(),
+    role: document.getElementById('db-role').value.trim(),
+    interview_date: document.getElementById('db-date').value.trim(),
+    transcript: document.getElementById('db-transcript').value.trim(),
+  };
+  if (!payload.transcript) { toast('请粘贴转写文本'); return; }
+  try {
+    showLoading('保存并提取问答中…');
+    const created = await api('/api/debriefs', { method: 'POST', body: JSON.stringify(payload) });
+    const extracted = await api('/api/debriefs/' + created.id + '/extract', { method: 'POST', body: '{}' });
+    state.debriefs.unshift(extracted);
+    state.debriefForm = null;
+    hideLoading();
+    go('debrief-detail', extracted.id);
+    toast('已提取 ' + (extracted.items || []).length + ' 条问答');
+  } catch (e) {
+    hideLoading();
+    toast('失败：' + e.message);
+    render();
+  }
+}
+
+function getDebrief() {
+  return (state.debriefs || []).find(d => d.id === state.debriefDetailId);
+}
+
+function replaceDebrief(d) {
+  const i = state.debriefs.findIndex(x => x.id === d.id);
+  if (i >= 0) state.debriefs[i] = d;
+  else state.debriefs.unshift(d);
+}
+
+function renderDebriefDetail() {
+  const d = getDebrief();
+  if (!d) return `<div class="empty">未找到面经 <button class="btn" onclick="go('debrief')">返回</button></div>`;
+  const items = d.items || [];
+  const weakN = items.filter(i => i.quality === 'weak').length;
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="go('debrief')">← 面经列表</button>
+      ${esc(d.title)}
+    </h1>
+    <div class="summary-bar">
+      <div class="meta">${esc(d.company)} · ${esc(d.role)} · ${esc(d.interview_date)}</div>
+      <div style="margin-top:8px">
+        <button class="btn btn-sm" onclick="extractDebrief('${d.id}')">重新提取问答</button>
+        <button class="btn btn-primary btn-sm" onclick="analyzeDebrief('${d.id}')">AI 分析全部问答</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteDebrief('${d.id}')">删除整场面经</button>
+        <span class="meta" style="margin-left:8px">${items.length} 条 · 弱答 ${weakN}（标红）</span>
+      </div>
+    </div>
+    <details class="card">
+      <summary>原始转写文本</summary>
+      <pre style="white-space:pre-wrap;font-size:13px;margin-top:8px;line-height:1.5">${esc(d.transcript)}</pre>
+    </details>
+    ${!items.length ? '<div class="empty">尚未提取问答，点上方按钮</div>' : items.map(it => {
+      const qclass = it.quality === 'weak' ? 'qa-weak' : (it.quality === 'good' ? 'qa-good' : 'qa-pending');
+      const qlabel = it.quality === 'weak' ? '<span class="weak-label">弱答 · 需优化</span>'
+        : (it.quality === 'good' ? '<span class="good-label">较好</span>' : '<span class="meta">待分析</span>');
+      return `
+        <div class="card ${qclass}">
+          <div class="flex-between">
+            <div>${qlabel}</div>
+            <div>
+              <button class="btn btn-sm" onclick="analyzeDebrief('${d.id}','${it.id}')">分析本条</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteDebriefItem('${d.id}','${it.id}')">删除本条</button>
+            </div>
+          </div>
+          <p style="margin:10px 0 6px"><strong>问：</strong>${esc(it.question)}</p>
+          <p style="margin-bottom:8px"><strong>答：</strong>${esc(it.answer)}</p>
+          ${(it.tags || []).map(t => `<span class="tag tag-l1">${esc(t)}</span>`).join('')}
+          ${it.analysis ? `<div class="feedback" style="margin-top:10px"><strong>AI 分析</strong><p style="margin-top:6px">${esc(it.analysis)}</p></div>` : ''}
+          ${it.optimized_answer && it.quality === 'weak' ? `
+            <div class="card" style="margin-top:8px;background:#fff;border-style:dashed">
+              <strong>优化回答建议</strong>
+              <pre style="white-space:pre-wrap;margin-top:6px;font-size:13px;line-height:1.5">${esc(it.optimized_answer)}</pre>
+              <button class="btn btn-sm" style="margin-top:8px" onclick="addWeakToKnowledge('${d.id}','${it.id}')">📚 弱答入库到知识汇总</button>
+            </div>` : ''}
+        </div>`;
+    }).join('')}`;
+}
+
+async function deleteDebrief(id) {
+  const d = (state.debriefs || []).find(function (x) { return x.id === id; });
+  if (!d) { toast('面经不存在'); return; }
+  const ok = await confirmDelete({
+    scope: 'debrief',
+    title: '删除这场面经？',
+    body: '将删除「' + (d.title || '未命名面经') + '」及其中全部问答，无法恢复。',
+    dangerLabel: '确认删除',
+  });
+  if (!ok) return;
+  try {
+    await api('/api/debriefs/' + id, { method: 'DELETE' });
+    state.debriefs = state.debriefs.filter(function (x) { return x.id !== id; });
+    if (state.debriefDetailId === id) {
+      state.debriefDetailId = null;
+      state.page = 'debrief';
+    }
+    toast('面经已删除');
+    render();
+  } catch (e) {
+    toast('删除失败：' + e.message);
+  }
+}
+
+async function deleteDebriefItem(debriefId, itemId) {
+  const d = (state.debriefs || []).find(function (x) { return x.id === debriefId; });
+  const it = d && (d.items || []).find(function (i) { return i.id === itemId; });
+  if (!it) { toast('条目不存在'); return; }
+  const ok = await confirmDelete({
+    scope: 'debrief_item',
+    title: '删除这条问答？',
+    body: '将删除问：「' + (it.question || '').slice(0, 40) + '」，整场面经仍保留。',
+    dangerLabel: '确认删除',
+  });
+  if (!ok) return;
+  try {
+    const updated = await api('/api/debriefs/' + debriefId + '/items/' + encodeURIComponent(itemId), { method: 'DELETE' });
+    replaceDebrief(updated);
+    toast('已删除该条问答');
+    render();
+  } catch (e) {
+    toast('删除失败：' + e.message);
+  }
+}
+
+async function extractDebrief(id) {
+  try {
+    showLoading('正在从转写中提取问答…');
+    const d = await api('/api/debriefs/' + id + '/extract', { method: 'POST', body: '{}' });
+    replaceDebrief(d);
+    hideLoading();
+    render();
+    toast('已提取 ' + (d.items || []).length + ' 条');
+  } catch (e) {
+    hideLoading();
+    toast('提取失败：' + e.message);
+    render();
+  }
+}
+
+async function analyzeDebrief(id, itemId) {
+  try {
+    showLoading(itemId ? 'AI 正在分析本条回答…' : 'AI 正在逐条分析面经，请稍候…');
+    const body = itemId ? { item_id: itemId } : {};
+    const d = await api('/api/debriefs/' + id + '/analyze', { method: 'POST', body: JSON.stringify(body) });
+    replaceDebrief(d);
+    hideLoading();
+    render();
+    const weak = (d.items || []).filter(i => i.quality === 'weak').length;
+    toast(itemId ? '本条分析完成' : '分析完成，弱答 ' + weak + ' 条已标红');
+  } catch (e) {
+    hideLoading();
+    toast('分析失败：' + e.message);
+    render();
+  }
+}
+
+async function addWeakToKnowledge(debriefId, itemId) {
+  const d = (state.debriefs || []).find(x => x.id === debriefId);
+  const it = d && (d.items || []).find(i => i.id === itemId);
+  if (!it) { toast('条目不存在'); return; }
+  try {
+    const created = await api('/api/knowledge', {
+      method: 'POST',
+      body: JSON.stringify({
+        question: it.question,
+        my_answer: it.answer || '',
+        reference_answer: it.optimized_answer || '',
+        tags: it.tags || ['行为面试'],
+        note: '来自真实面经：' + (d.title || debriefId),
+        status: '待巩固',
+      }),
+    });
+    state.knowledge.unshift(mapKnowledge(created));
+    toast('已加入知识汇总');
+  } catch (e) {
+    toast('入库失败：' + e.message);
+  }
+}
+
+/* ========== ⑧ 我的（本机资料卡，不是登录账号） ========== */
+function renderMe() {
+  const p = state.profile || loadProfile();
+  const skipMap = loadSkipMap();
+  const today = todayStr();
+  const qaCount = state.experiences.reduce(function (n, e) { return n + countNodes(e.qaTree || []); }, 0);
+  const skipRows = Object.keys(DELETE_SCOPES).map(function (scope) {
+    const on = skipMap[scope] === today;
+    return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid #eee">
+      <div>
+        <strong>${esc(DELETE_SCOPES[scope])}</strong>
+        <div class="meta">${on ? '今日删除不再确认' : '删除前会确认'}</div>
+      </div>
+      ${on ? `<button class="btn btn-sm" onclick="clearSkipDeleteConfirm('${scope}');toast('已恢复「${DELETE_SCOPES[scope]}」删除确认');render()">恢复确认</button>` : '<span class="meta">未跳过</span>'}
+    </div>`;
+  }).join('');
+  return `
+    <h1 class="page-title">⑧ 我的</h1>
+    <p class="meta" style="margin-bottom:12px">当前没有登录系统，这里是<strong>本机资料卡</strong>：改名字只存在你这台电脑的浏览器里，数据仍是这份 SQLite 里的共用库。</p>
+    <div class="card">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>称呼</label>
+          <input type="text" id="me-name" value="${esc(p.displayName || '')}" placeholder="怎么称呼你" />
+        </div>
+        <div class="form-row">
+          <label>目标岗位</label>
+          <input type="text" id="me-role" value="${esc(p.targetRole || '')}" placeholder="如：产品经理 / 后端实习" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>备注</label>
+        <textarea id="me-note" style="min-height:64px" placeholder="求职阶段、城市等">${esc(p.note || '')}</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveMeForm()">保存资料卡</button>
+    </div>
+    <div class="summary-bar">
+      <strong>本机数据概览</strong>
+      <p class="meta" style="margin-top:8px">
+        经历 ${state.experiences.length} 段 · 追问节点 ${qaCount} · 知识 ${state.knowledge.length} 条 · 面经 ${(state.debriefs || []).length} 场
+      </p>
+      <p class="meta" style="margin-top:4px">后端 LLM：${esc(state.llmEffective || (state.apiOnline ? '未知' : '未连接'))}</p>
+    </div>
+    <div class="card">
+      <strong>删除确认偏好（按模块、仅今日）</strong>
+      <p class="meta" style="margin:8px 0 4px">在某个模块勾选「下次不再提示」只影响该模块；明天自动失效。</p>
+      ${skipRows}
+      <button class="btn btn-sm" style="margin-top:12px" onclick="clearSkipDeleteConfirm();toast('已恢复全部模块的删除确认');render()">全部恢复确认</button>
+    </div>
+  `;
+}
+
+function saveMeForm() {
+  saveProfile({
+    displayName: (document.getElementById('me-name').value || '').trim() || 'CHEN',
+    targetRole: (document.getElementById('me-role').value || '').trim(),
+    note: (document.getElementById('me-note').value || '').trim(),
+  });
+  toast('资料卡已保存在本机浏览器');
+  render();
+}
+
+/* ========== ⑦ 岗位定制 ========== */
+function renderJob() {
+  return `
+    <h1 class="page-title">⑦ 岗位定制</h1>
+    <p class="meta" style="margin-bottom:12px">粘贴 JD → 对照经历库做匹配度与补短板（走后端 LLM，侧边栏显示当前是 mock 还是 openai）</p>
+    <div class="card">
+      <div class="form-row">
+        <label>目标岗位 JD</label>
+        <textarea id="jd-text" style="min-height:140px" placeholder="粘贴岗位描述…">${esc(state.jdText)}</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="analyzeJD()">分析匹配度</button>
+    </div>
+    ${state.jdReport ? renderJDReport(state.jdReport) : ''}`;
+}
+
+async function analyzeJD() {
+  const el = document.getElementById('jd-text');
+  state.jdText = el ? el.value : state.jdText;
+  try {
+    showLoading('AI 正在对照你的经历分析 JD…');
+    const data = await api('/api/job/match', {
+      method: 'POST',
+      body: JSON.stringify({ jd_text: state.jdText || '' }),
+    });
+    state.jdReport = data;
+    hideLoading();
+    render();
+    toast(data.llm_effective === 'openai' ? '匹配分析完成' : '当前仍为 Mock（未读到 Key）');
+  } catch (e) {
+    hideLoading();
+    toast('分析失败：' + e.message);
+    render();
+  }
+}
+
+function renderJDReport(r) {
+  const firstId = (state.experiences[0] && state.experiences[0].id) || '';
+  const matches = r.matches || [];
+  const gaps = r.gaps || [];
+  const actions = r.actions || [];
+  return `
+    <div class="card" style="margin-top:8px">
+      <h3 style="margin-bottom:8px">匹配度报告 <span class="badge">${esc(r.score)}/100</span>
+        ${r.llm_effective ? `<span class="badge">${esc(r.llm_effective)}</span>` : ''}
+      </h3>
+      <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:16px">
+        <div style="height:8px;width:${Math.max(0, Math.min(100, Number(r.score) || 0))}%;background:#1a56db;border-radius:4px"></div>
+      </div>
+      <h4 class="match-ok" style="margin-bottom:8px">✓ 匹配点</h4>
+      ${matches.length ? matches.map(m => `<p style="margin-bottom:6px"><strong>${esc(m.exp)}</strong> — ${esc(m.point)}</p>`).join('') : '<p class="meta">暂无</p>'}
+      <hr class="divider" />
+      <h4 class="match-gap" style="margin-bottom:8px">△ 缺口 / 短板</h4>
+      ${gaps.length ? gaps.map(g => `<p style="margin-bottom:6px"><strong>${esc(g.skill)}</strong> — ${esc(g.tip)}</p>`).join('') : '<p class="meta">暂无</p>'}
+      <hr class="divider" />
+      <h4 class="match-tip" style="margin-bottom:8px">→ 建议行动</h4>
+      ${actions.length ? actions.map(a => `<p style="margin-bottom:6px"><span class="tag">${esc(a.type)}</span> ${esc(a.text)}</p>`).join('') : '<p class="meta">暂无</p>'}
+      <div style="margin-top:16px">
+        ${firstId ? `<button class="btn btn-primary" onclick="go('interview','${firstId}')">按建议去练经历</button>` : ''}
+        <button class="btn" onclick="go('knowledge')">去知识汇总巩固</button>
+      </div>
+    </div>`;
+}
+
+/* boot */
+state.profile = loadProfile();
+state.introVersions[0].content = state.introContent;
+render();
+(async function boot() {
+  try {
+    await refreshAll();
+    toast('已连接后端 · LLM=' + (state.llmEffective || 'mock'));
+    render();
+  } catch (e) {
+    state.apiOnline = false;
+    state.apiError = String(e.message || e);
+    render();
+    toast('后端未连接：请先启动 uvicorn（端口 8000）');
+  }
+})();
+</script>
+</body>
+</html>

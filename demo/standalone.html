@@ -3,88 +3,344 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>简历面试助手 - Demo（已接后端 API）</title>
+  <title>简历面试助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8c;
+      --line: #d8e0ea;
+      --line-strong: #b8c5d6;
+      --bg: #e8edf4;
+      --bg-glow: #d5e4f7;
+      --surface: #ffffff;
+      --surface-2: #f5f8fc;
+      --accent: #1a56db;
+      --accent-deep: #1346b5;
+      --accent-soft: #e8f0fe;
+      --ok: #1b7a45;
+      --warn: #b45309;
+      --danger: #c62828;
+      --radius: 10px;
+      --shadow: 0 1px 2px rgba(21,32,43,.04), 0 8px 24px rgba(21,32,43,.06);
+      --font: "DM Sans", "Noto Sans SC", sans-serif;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; color: #333; background: #f5f5f5; }
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 12% -10%, var(--bg-glow), transparent 55%),
+        radial-gradient(700px 380px at 100% 0%, #e3ebe8, transparent 50%),
+        var(--bg);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
     .app { display: flex; min-height: 100vh; }
-    .sidebar { width: 210px; background: #fff; border-right: 1px solid #ddd; padding: 16px 0; flex-shrink: 0; overflow-y: auto; max-height: 100vh; }
-    .sidebar h2 { padding: 0 16px 12px; font-size: 15px; border-bottom: 1px solid #eee; }
-    .sidebar .nav-group { padding: 8px 16px 4px; font-size: 11px; color: #999; text-transform: uppercase; }
-    .sidebar button { display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; color: #555; font-size: 14px; }
-    .sidebar button:hover { background: #f0f0f0; }
-    .sidebar button.active { background: #e8f0fe; color: #1a56db; font-weight: 600; border-right: 3px solid #1a56db; }
-    .main { flex: 1; padding: 20px 24px; overflow: auto; }
-    .page-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px; margin-bottom: 12px; }
-    .upload { border: 2px dashed #bbb; padding: 24px; text-align: center; color: #888; cursor: pointer; margin-bottom: 12px; border-radius: 4px; }
-    .upload:hover { border-color: #1a56db; color: #1a56db; }
-    .upload.drag { border-color: #1a56db; background: #e8f0fe; color: #1a56db; }
-    .parse-modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 350; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .parse-panel { background: #fff; width: min(720px, 100%); max-height: 88vh; overflow: auto; border-radius: 6px; padding: 20px; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
-    .parse-card { border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 10px; }
-    .parse-card.selected { border-color: #1a56db; background: #f7faff; }
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(180deg, #182433 0%, #121a24 100%);
+      color: #d7e0ea;
+      padding: 20px 0 16px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      max-height: 100vh;
+      border-right: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar .brand {
+      padding: 0 18px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 8px;
+    }
+    .sidebar .brand-mark {
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #7f95ab;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .sidebar .brand-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -.01em;
+      line-height: 1.25;
+    }
+    .sidebar .brand-tag {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #8fa3b6;
+      line-height: 1.4;
+    }
+    .sidebar .nav-group { padding: 10px 18px 4px; font-size: 11px; color: #7a8fa3; font-weight: 600; letter-spacing: .04em; }
+    .sidebar button {
+      display: block; width: calc(100% - 16px); margin: 2px 8px; text-align: left;
+      padding: 10px 12px; border: none; background: none; cursor: pointer;
+      color: #c5d2de; font-size: 14px; font-family: inherit; border-radius: 8px;
+      transition: background .15s, color .15s;
+    }
+    .sidebar button:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .sidebar button.active {
+      background: rgba(26,86,219,.28);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .nav-status {
+      padding: 8px 18px 12px;
+      font-size: 11px;
+      color: #8fa3b6;
+      line-height: 1.5;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 6px;
+    }
+    .main {
+      flex: 1;
+      padding: 28px 32px 40px;
+      overflow: auto;
+      max-width: 1180px;
+    }
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .page-lead {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+      max-width: 52em;
+      line-height: 1.55;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .hub-grid { display: grid; gap: 12px; max-width: 560px; }
+    .hub-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .15s, transform .15s, box-shadow .15s;
+    }
+    .hub-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(26,86,219,.1);
+    }
+    .hub-card strong { display: block; font-size: 16px; font-weight: 650; color: var(--ink); }
+    .hub-card .meta { margin-top: 6px; }
+    .upload {
+      border: 1.5px dashed var(--line-strong);
+      padding: 22px;
+      text-align: center;
+      color: var(--muted);
+      cursor: pointer;
+      margin-bottom: 12px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.55);
+      transition: border-color .15s, background .15s, color .15s;
+    }
+    .upload:hover, .upload.drag {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .parse-modal, .confirm-modal, .modal-bg, .overlay, .loading-mask {
+      position: fixed; inset: 0; z-index: 350;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .parse-modal { background: rgba(21,32,43,.4); z-index: 350; }
+    .confirm-modal { background: rgba(21,32,43,.45); z-index: 450; }
+    .modal-bg { background: rgba(21,32,43,.4); z-index: 200; }
+    .overlay { background: rgba(21,32,43,.35); justify-content: flex-end; z-index: 100; padding: 0; }
+    .loading-mask {
+      background: rgba(232,237,244,.78);
+      flex-direction: column; gap: 12px; z-index: 400;
+    }
+    .parse-panel, .confirm-panel, .modal {
+      background: var(--surface);
+      width: min(720px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 16px 48px rgba(21,32,43,.2);
+      border: 1px solid var(--line);
+    }
+    .confirm-panel { width: min(420px, 100%); }
+    .modal { width: 560px; max-width: 92vw; max-height: 85vh; }
+    .overlay-panel {
+      width: 380px; height: 100%; background: var(--surface);
+      padding: 22px; box-shadow: -8px 0 28px rgba(21,32,43,.12); overflow-y: auto;
+    }
+    .parse-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .parse-card.selected { border-color: var(--accent); background: #f7faff; }
     .parse-card label.row { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
     .parse-card input[type=checkbox] { margin-top: 3px; }
-    .btn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px; margin: 0 8px 8px 0; }
-    .btn:hover { background: #f5f5f5; }
+    .btn {
+      padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 8px;
+      background: var(--surface); cursor: pointer; font-size: 13px; margin: 0 8px 8px 0;
+      font-family: inherit; color: var(--ink); font-weight: 500;
+      transition: background .12s, border-color .12s, color .12s;
+    }
+    .btn:hover { background: var(--surface-2); border-color: #9aafc4; }
     .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-primary { background: #1a56db; color: #fff; border-color: #1a56db; }
-    .btn-primary:hover { background: #1648c0; }
-    .btn-active { background: #e8f0fe; border-color: #1a56db; color: #1a56db; }
-    .btn-ghost { background: transparent; border-color: transparent; color: #1a56db; }
-    .btn-sm { padding: 4px 10px; font-size: 12px; }
-    .tag { display: inline-block; background: #eee; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin: 0 4px 4px 0; cursor: default; }
-    .tag.clickable { cursor: pointer; background: #e8f0fe; color: #1a56db; }
-    .tag.clickable:hover { background: #d0e0fc; }
-    .tag-l1 { background: #e3f2fd; color: #1565c0; }
-    textarea, input[type=text], input[type=month], select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 14px; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+    .btn-active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--accent); }
+    .btn-ghost:hover { background: var(--accent-soft); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-danger { background: #fff; color: var(--danger); border-color: #ef9a9a; }
+    .btn-danger:hover { background: #ffebee; }
+    .btn-danger-solid { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-danger-solid:hover { background: #b71c1c; }
+    .tag {
+      display: inline-block; background: #eef2f6; padding: 3px 9px; border-radius: 999px;
+      font-size: 11px; margin: 0 4px 4px 0; cursor: default; border: 1px solid transparent; color: var(--ink-soft);
+    }
+    .tag.clickable { cursor: pointer; background: var(--accent-soft); color: var(--accent); border-color: #d0dcf5; }
+    .tag.clickable:hover { background: #dce8fb; }
+    .tag.clickable.tag-on {
+      background: var(--accent); color: #fff; border-color: var(--accent-deep);
+      font-weight: 600; box-shadow: 0 1px 2px rgba(26,86,219,.25);
+    }
+    .tag.tag-parent { font-weight: 600; padding: 4px 12px; font-size: 12px; border-radius: 8px; }
+    .tag.tag-child { background: #f5f8fc; color: #334; border-color: #dde5f2; border-radius: 8px; }
+    .tag.tag-child.tag-on { background: #0f3ead; color: #fff; border-color: #0c3491; }
+    .tag.clickable.tag-l1 { background: var(--accent-soft); color: var(--accent); border-color: #c5d4f7; border-radius: 8px; }
+    .tag.clickable.tag-l1.tag-on, .tag.clickable.tag-l1:active { background: var(--accent); color: #fff; }
+    .tag-sub-row { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+    textarea, input[type=text], input[type=month], input[type=search], select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong);
+      border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff; color: var(--ink);
+    }
+    textarea:focus, input:focus, select:focus {
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,86,219,.15);
+    }
     textarea { min-height: 80px; resize: vertical; }
     .form-row { margin-bottom: 12px; }
-    .form-row label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; }
-    .form-row .hint { font-weight: 400; color: #999; font-size: 12px; }
+    .form-row label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--ink); }
+    .form-row .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .hidden { display: none !important; }
-    .interview { display: flex; gap: 16px; height: calc(100vh - 100px); }
-    .col-left, .col-right { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 16px; overflow: auto; }
+    .interview { display: flex; gap: 16px; height: calc(100vh - 140px); min-height: 480px; }
+    .col-left, .col-right {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 18px; overflow: auto; box-shadow: var(--shadow);
+    }
     .col-left { flex: 6; display: flex; flex-direction: column; }
     .col-right { flex: 4; }
-    .question-box { background: #f8f9ff; border: 1px solid #c5d4f7; padding: 20px; font-size: 17px; font-weight: 600; margin-bottom: 16px; min-height: 72px; line-height: 1.5; }
-    .btn-danger { background: #fff; color: #c62828; border-color: #ef9a9a; }
-    .btn-danger:hover { background: #ffebee; }
-    .btn-danger-solid { background: #c62828; color: #fff; border-color: #c62828; }
-    .btn-danger-solid:hover { background: #b71c1c; }
-    .confirm-modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 450; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .confirm-panel { background: #fff; width: min(420px, 100%); border-radius: 6px; padding: 20px; box-shadow: 0 8px 28px rgba(0,0,0,.2); }
-    .confirm-panel h3 { font-size: 16px; margin-bottom: 8px; }
-    .confirm-skip { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0 4px; font-size: 12px; color: #666; cursor: pointer; line-height: 1.4; }
-    .confirm-skip input { margin-top: 2px; }
-    .tree-node { display: flex; align-items: flex-start; gap: 6px; padding: 6px 8px; margin: 2px 0; border-radius: 4px; cursor: pointer; font-size: 13px; border: 1px solid transparent; line-height: 1.4; }
-    .tree-node:hover { background: #f0f0f0; }
-    .tree-node.active { background: #e8f0fe; border-color: #1a56db; }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .panel-head h3 { font-size: 14px; font-weight: 650; color: var(--ink); }
+    .stage-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 14px; padding: 8px 12px; background: var(--surface-2);
+      border-radius: 8px; border: 1px solid var(--line);
+    }
+    .stage-pill {
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+      background: #e8eef5; color: var(--ink-soft);
+    }
+    .stage-pill.on { background: var(--accent-soft); color: var(--accent); }
+    .question-box {
+      background: linear-gradient(135deg, #f4f8ff 0%, #eef4fc 100%);
+      border: 1px solid #c5d4f7; padding: 22px 20px; font-size: 18px; font-weight: 650;
+      margin-bottom: 14px; min-height: 84px; line-height: 1.55; border-radius: 10px; color: var(--ink);
+    }
+    .answer-actions { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 0; }
+    .next-actions {
+      margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line);
+    }
+    .tree-node {
+      display: flex; align-items: flex-start; gap: 6px; padding: 8px 10px; margin: 2px 0;
+      border-radius: 8px; cursor: pointer; font-size: 13px; border: 1px solid transparent; line-height: 1.4;
+    }
+    .tree-node:hover { background: var(--surface-2); }
+    .tree-node.active { background: var(--accent-soft); border-color: #c5d4f7; }
     .tree-node .tree-label { flex: 1; min-width: 0; }
-    .tree-node .tree-del { flex-shrink: 0; opacity: 0; padding: 0 4px; font-size: 12px; color: #c62828; border: none; background: none; cursor: pointer; }
+    .tree-node .tree-del {
+      flex-shrink: 0; opacity: 0; padding: 0 4px; font-size: 12px; color: var(--danger);
+      border: none; background: none; cursor: pointer;
+    }
     .tree-node:hover .tree-del, .tree-node.active .tree-del { opacity: 1; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.3); display: flex; justify-content: flex-end; z-index: 100; }
-    .overlay-panel { width: 380px; background: #fff; padding: 20px; box-shadow: -2px 0 8px rgba(0,0,0,.12); overflow-y: auto; }
-    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 200; }
-    .modal { background: #fff; padding: 24px; width: 560px; max-width: 92vw; max-height: 85vh; overflow: auto; border-radius: 6px; }
-    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 4px; z-index: 300; font-size: 13px; }
-    .badge { display: inline-block; padding: 2px 8px; background: #eee; border-radius: 3px; font-size: 11px; }
-    .feedback { border: 1px solid #ffe082; background: #fffde7; padding: 12px; margin: 12px 0; border-radius: 4px; }
-    .notebook-qa { padding: 10px 12px; border-left: 2px solid #ddd; margin: 6px 0; font-size: 13px; background: #fafafa; border-radius: 0 4px 4px 0; }
-    .list-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #fff; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 8px; cursor: pointer; gap: 12px; }
-    .list-row:hover { border-color: #1a56db; }
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: var(--ink); color: #fff; padding: 11px 20px; border-radius: 999px;
+      z-index: 300; font-size: 13px; box-shadow: 0 8px 24px rgba(21,32,43,.25);
+    }
+    .badge {
+      display: inline-block; padding: 2px 8px; background: #eef2f6; border-radius: 999px;
+      font-size: 11px; font-weight: 600; color: var(--ink-soft);
+    }
+    .badge.accent { background: var(--accent-soft); color: var(--accent); }
+    .feedback {
+      border: 1px solid #ffe082; background: #fffdf2; padding: 14px; margin: 12px 0; border-radius: 10px;
+    }
+    .score-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; flex-wrap: wrap; }
+    .score-num { font-size: 22px; font-weight: 700; color: var(--accent); min-width: 52px; }
+    .score-bar { flex: 1; min-width: 120px; height: 8px; background: #e8eef8; border-radius: 4px; overflow: hidden; }
+    .score-bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+    .score-dims { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .score-dim { font-size: 11px; background: #fff; border: 1px solid #c5d4f7; color: #333; padding: 2px 8px; border-radius: 999px; }
+    .voice-btn.recording { background: #ffebee; border-color: #e53935; color: #c62828; font-weight: 600; }
+    .notebook-qa {
+      padding: 10px 12px; border-left: 3px solid var(--line-strong); margin: 6px 0; font-size: 13px;
+      background: var(--surface-2); border-radius: 0 8px 8px 0;
+    }
+    .list-row {
+      display: flex; justify-content: space-between; align-items: center; padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      margin-bottom: 8px; cursor: pointer; gap: 12px; box-shadow: var(--shadow);
+      transition: border-color .15s;
+    }
+    .list-row:hover { border-color: var(--accent); }
     .row-actions { flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
-    .summary-bar { background: #f0f7ff; border: 1px solid #c5d4f7; border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; }
-    .match-ok { color: #2e7d32; }
-    .match-gap { color: #c62828; }
+    .summary-bar {
+      background: var(--accent-soft); border: 1px solid #c5d4f7; border-radius: var(--radius);
+      padding: 14px 16px; margin-bottom: 16px;
+    }
+    .match-ok { color: var(--ok); }
+    .match-gap { color: var(--danger); }
     .match-tip { color: #1565c0; }
-    .quiz-card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 24px; max-width: 640px; margin: 0 auto; }
-    .empty { text-align: center; padding: 40px; color: #888; }
+    .quiz-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 24px; max-width: 640px; margin: 0 auto; box-shadow: var(--shadow);
+    }
+    .empty { text-align: center; padding: 48px 24px; color: var(--muted); }
+    .empty-panel {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px; color: var(--muted); background: var(--surface-2);
+      border-radius: 10px; border: 1px dashed var(--line);
+    }
+    .empty-panel p:first-child { font-size: 15px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
     .flex-between { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    .meta { color: #888; font-size: 12px; }
-    .divider { border: none; border-top: 1px solid #eee; margin: 16px 0; }
+    .meta { color: var(--muted); font-size: 12px; }
+    .divider { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
     .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
     .status-dot.weak { background: #f57c00; }
@@ -92,28 +348,56 @@
     .qa-weak { border-color: #e53935 !important; background: #fff5f5; }
     .qa-good { border-color: #43a047; background: #f4fff6; }
     .qa-pending { border-left: 3px solid #bbb; }
-    .weak-label { color: #c62828; font-weight: 600; font-size: 12px; }
-    .good-label { color: #2e7d32; font-weight: 600; font-size: 12px; }
-    .loading-mask { position: fixed; inset: 0; background: rgba(255,255,255,.72); z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-    .spinner { width: 36px; height: 36px; border: 3px solid #d0d7e8; border-top-color: #1a56db; border-radius: 50%; animation: spin .8s linear infinite; }
+    .weak-label { color: var(--danger); font-weight: 600; font-size: 12px; }
+    .good-label { color: var(--ok); font-weight: 600; font-size: 12px; }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid #d0d7e8; border-top-color: var(--accent);
+      border-radius: 50%; animation: spin .8s linear infinite;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 14px; color: #333; font-weight: 600; }
+    .loading-text { font-size: 14px; color: var(--ink); font-weight: 600; }
     .bar-track { width: 200px; height: 6px; background: #e8eef8; border-radius: 4px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 40%; background: #1a56db; border-radius: 4px; animation: bar 1.2s ease-in-out infinite; }
+    .bar-fill { height: 100%; width: 40%; background: var(--accent); border-radius: 4px; animation: bar 1.2s ease-in-out infinite; }
     @keyframes bar { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
-    .tip-box { background: #f7f9fc; border: 1px solid #e0e6ef; border-radius: 4px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.55; color: #555; }
-    .tip-box summary { cursor: pointer; font-weight: 600; color: #333; list-style: none; }
+    .tip-box {
+      background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 12px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.55; color: var(--ink-soft);
+    }
+    .tip-box summary { cursor: pointer; font-weight: 600; color: var(--ink); list-style: none; }
     .tip-box summary::-webkit-details-marker { display: none; }
-    .tip-box summary::before { content: '▸ '; color: #1a56db; }
+    .tip-box summary::before { content: '▸ '; color: var(--accent); }
     .tip-box[open] summary::before { content: '▾ '; }
     .tip-box ol { margin: 8px 0 0 1.2em; }
     .tip-box li { margin-bottom: 4px; }
+    .hub-back { margin-right: 4px; }
+    .filter-card { padding: 16px 18px; }
+    .exp-card .exp-title { font-size: 16px; font-weight: 650; }
+    .exp-card p { color: var(--ink-soft); }
+    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; margin-bottom: 14px; }
+    .toolbar .upload { flex: 1; margin: 0; }
+    .confirm-panel h3 { font-size: 16px; margin-bottom: 8px; }
+    .confirm-skip { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0 4px; font-size: 12px; color: #666; cursor: pointer; line-height: 1.4; }
+    .confirm-skip input { margin-top: 2px; }
+    code { font-size: 12px; background: #eef2f6; padding: 1px 5px; border-radius: 4px; }
+    a { color: var(--accent); }
+    @media (max-width: 900px) {
+      .app { flex-direction: column; }
+      .sidebar { width: 100%; max-height: none; }
+      .sidebar button { display: inline-block; width: auto; }
+      .interview { flex-direction: column; height: auto; }
+      .main { padding: 20px 16px 32px; }
+      .page-title { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
-    <h2>简历面试助手</h2>
+    <div class="brand">
+      <div class="brand-mark">CV Helper</div>
+      <div class="brand-name">简历面试助手</div>
+      <div class="brand-tag">把练习变成可复习的资料</div>
+    </div>
     <nav id="nav"></nav>
   </aside>
   <main class="main" id="main"></main>
@@ -126,14 +410,89 @@
 const L1_TAGS = ['行为面试', '技术', '业务理解', '协作沟通', '职业规划'];
 
 const NAV = [
-  { id: 'experience', label: '① 我的经历库', group: '准备' },
-  { id: 'intro', label: '② 自我介绍', group: '准备' },
-  { id: 'interview', label: '③ 模拟面试', group: '练习' },
-  { id: 'notebook', label: '④ 面试笔记本', group: '归档' },
-  { id: 'knowledge', label: '⑤ 知识汇总', group: '归档' },
-  { id: 'debrief', label: '⑥ 真实面经', group: '归档' },
-  { id: 'job', label: '⑦ 岗位定制', group: '定向' },
-  { id: 'me', label: '⑧ 我的', group: '账号' },
+  { id: 'experience', label: '经历库' },
+  { id: 'practice', label: '练习' },
+  { id: 'review', label: '复习' },
+  { id: 'job', label: '岗位匹配' },
+  { id: 'me', label: '我的' },
+];
+
+const PRACTICE_PAGES = ['intro', 'interview', 'voice'];
+const REVIEW_PAGES = ['notebook', 'notebook-detail', 'knowledge', 'debrief', 'debrief-detail'];
+
+const SCORE_DIM_LABELS = {
+  accuracy: '准确性',
+  depth: '深度',
+  logic: '逻辑',
+  expression: '表达',
+};
+
+const EXP_TYPES = ['全部', '实习', '项目', '校园', '其他'];
+
+/** 能力标签：大类 → 细分（点大类展开细分，再点细分精筛） */
+const EXP_TAG_TREE = [
+  {
+    key: 'AI',
+    label: 'AI',
+    children: [
+      { key: 'AI提效', re: /AI提效|提效|Copilot|自动化助手|Agent|智能助手/i },
+      { key: 'RAG调优', re: /RAG|向量|embedding|检索增强|知识库检索/i },
+      { key: '大模型应用', re: /大模型|LLM|GPT|豆包|提示词|Prompt|生成式/i },
+      { key: '工程开发', re: /Python|Java|后端|前端|API|代码|开发|算法/i },
+    ],
+  },
+  {
+    key: '数据',
+    label: '数据',
+    children: [
+      { key: '数据分析', re: /数据分析|分析洞察|洞察|复盘/i },
+      { key: '指标设计', re: /指标|漏斗|DAU|埋点|核心指标/i },
+      { key: '可视化', re: /可视化|看板|Dashboard|Tableau|图表/i },
+      { key: 'SQL/数仓', re: /SQL|Excel|BI|数仓|数据仓库/i },
+    ],
+  },
+  {
+    key: '产品',
+    label: '产品',
+    children: [
+      { key: '需求设计', re: /需求|PRD|功能设计|产品设计/i },
+      { key: '用户研究', re: /用户研究|调研|访谈|体验/i },
+      { key: '0-1项目', re: /0-1|0到1|从零|新建|立项|冷启动/i },
+    ],
+  },
+  {
+    key: '协作',
+    label: '协作',
+    children: [
+      { key: '跨部门推进', re: /跨部门|推进|对齐|推动落地/i },
+      { key: '沟通协调', re: /协作|沟通|协调|冲突/i },
+    ],
+  },
+  {
+    key: '增长',
+    label: '增长',
+    children: [
+      { key: '用户增长', re: /增长|获客|留存|转化|投放/i },
+      { key: '运营策略', re: /运营|活动运营|内容运营/i },
+    ],
+  },
+];
+
+const EXP_TAG_PARENT_KEYS = EXP_TAG_TREE.map(function (p) { return p.key; });
+const EXP_TAG_CHILD_INDEX = (function () {
+  const map = {};
+  EXP_TAG_TREE.forEach(function (p) {
+    (p.children || []).forEach(function (c) {
+      map[c.key] = { parent: p.key, re: c.re };
+    });
+  });
+  return map;
+})();
+
+const INTRO_GUIDE_QUESTIONS = [
+  '你最想突出的 1 个能力是什么？',
+  '哪段经历最能体现你和别人的不同？',
+  '你期望的目标岗位是什么方向？',
 ];
 
 const DELETE_SCOPES = {
@@ -142,8 +501,8 @@ const DELETE_SCOPES = {
   notebook: '面试笔记本',
   tree: '追问树',
   knowledge: '知识汇总',
-  debrief: '真实面经',
-  debrief_item: '面经问答',
+  debrief: '面试经历',
+  debrief_item: '面试问答',
 };
 
 const PROFILE_KEY = 'cv_helper_profile';
@@ -175,10 +534,35 @@ let state = {
   debriefForm: null,
   resumeParse: null,
   confirmDialog: null,
+  expSearch: '',
+  expTypeFilter: '全部',
+  expTagParent: '',
+  expTagFilter: '',
+  notebookQuiz: null,
+  consolidatePreview: null,
+  introWizard: null,
   profile: { displayName: 'CHEN', targetRole: '', note: '' },
   interview: {
     expId: 'exp_001', phase: 'idle', activeNodeId: null, branchFrom: null,
-    currentQ: '', draft: '', mode: null,
+    currentQ: '', draft: '', mode: null, voiceListening: false,
+  },
+  voice: {
+    expId: '', phase: 'idle', activeNodeId: null,
+    currentQ: '', draft: '', listening: false, speaking: false,
+  },
+  ttsEffective: 'browser',
+  ttsDoubaoConfigured: false,
+  ttsVoices: [],
+  ttsDefaultSpeaker: '',
+  voiceTtsMode: localStorage.getItem('cv_tts_mode') || 'auto',
+  voiceSpeaker: localStorage.getItem('cv_tts_speaker') || '',
+  /** 投递式会话：多经历 + 岗位/JD */
+  session: null,
+  sessionSetup: {
+    expIds: null,
+    targetRole: '',
+    jdText: '',
+    channel: 'text',
   },
 };
 
@@ -189,10 +573,8 @@ const MOCK_Q = {
 };
 
 /* ========== Backend API ========== */
-// 经 /ui 打开时与后端同域；直接打开 html 则回落本机 8000
-const API_BASE = (location.port === '8000' || location.pathname.indexOf('/ui') === 0)
-  ? ''
-  : 'http://127.0.0.1:8000';
+// http(s) 同域部署（含公网域名）直接走相对路径；file:// 本地打开才回落本机
+const API_BASE = location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
 
 async function api(path, opts) {
   opts = opts || {};
@@ -260,8 +642,45 @@ async function refreshAll() {
   state.apiOnline = true;
   state.apiError = '';
   state.llmEffective = health.llm_effective || 'mock';
+  state.ttsEffective = health.tts_effective || 'browser';
+  state.ttsDoubaoConfigured = !!health.tts_doubao_configured;
+  try {
+    const voiceStatus = await api('/api/voice/status');
+    state.ttsDoubaoConfigured = !!voiceStatus.doubao_configured;
+    state.ttsEffective = voiceStatus.effective || state.ttsEffective;
+    state.ttsVoices = voiceStatus.voices || [];
+    state.ttsDefaultSpeaker = voiceStatus.speaker || '';
+    if (!state.voiceSpeaker && state.ttsDefaultSpeaker) {
+      state.voiceSpeaker = state.ttsDefaultSpeaker;
+    }
+    if (state.voiceSpeaker && state.ttsVoices.length) {
+      const ok = state.ttsVoices.some(function (v) { return v.id === state.voiceSpeaker; });
+      if (!ok) state.voiceSpeaker = state.ttsDefaultSpeaker || state.ttsVoices[0].id;
+    }
+  } catch (e) {
+    state.ttsVoices = [];
+  }
+  if (state.ttsDoubaoConfigured && !localStorage.getItem('cv_tts_mode')) {
+    state.voiceTtsMode = 'doubao';
+    localStorage.setItem('cv_tts_mode', 'doubao');
+  }
+  if (state.voiceSpeaker) {
+    localStorage.setItem('cv_tts_speaker', state.voiceSpeaker);
+  }
   if (!state.interview.expId && state.experiences.length) {
     state.interview.expId = state.experiences[0].id;
+  }
+  if (!state.voice.expId && state.experiences.length) {
+    state.voice.expId = state.interview.expId || state.experiences[0].id;
+  }
+  if (state.sessionSetup.expIds == null && state.experiences.length) {
+    state.sessionSetup.expIds = state.experiences.map(function (e) { return e.id; });
+  } else if (state.sessionSetup.expIds == null) {
+    state.sessionSetup.expIds = [];
+  }
+  if (!state.sessionSetup.targetRole) {
+    const p = state.profile || loadProfile();
+    state.sessionSetup.targetRole = p.targetRole || '';
   }
 }
 
@@ -325,6 +744,223 @@ function summarizeKnowledgeTags(tree) {
 function getExpById(id) { return state.experiences.find(e => e.id === id); }
 function getExp() { return getExpById(state.interview.expId); }
 
+function findTagParent(childKey) {
+  const hit = EXP_TAG_CHILD_INDEX[childKey];
+  return hit ? hit.parent : '';
+}
+
+function getTagParentNode(parentKey) {
+  return EXP_TAG_TREE.find(function (p) { return p.key === parentKey; }) || null;
+}
+
+/** 原始标签 → { parents, children }；优先匹配细分，再回填大类 */
+function classifyExpTagTree(tags) {
+  const parents = [];
+  const children = [];
+  const seenP = {};
+  const seenC = {};
+  (tags || []).forEach(function (raw) {
+    const t = String(raw || '').trim();
+    if (!t) return;
+    if (EXP_TAG_PARENT_KEYS.indexOf(t) >= 0) {
+      if (!seenP[t]) { seenP[t] = true; parents.push(t); }
+      return;
+    }
+    if (EXP_TAG_CHILD_INDEX[t]) {
+      if (!seenC[t]) {
+        seenC[t] = true;
+        children.push(t);
+        const p = EXP_TAG_CHILD_INDEX[t].parent;
+        if (!seenP[p]) { seenP[p] = true; parents.push(p); }
+      }
+      return;
+    }
+    let matched = false;
+    for (let i = 0; i < EXP_TAG_TREE.length; i++) {
+      const parent = EXP_TAG_TREE[i];
+      for (let j = 0; j < (parent.children || []).length; j++) {
+        const child = parent.children[j];
+        if (child.re.test(t)) {
+          if (!seenC[child.key]) {
+            seenC[child.key] = true;
+            children.push(child.key);
+          }
+          if (!seenP[parent.key]) {
+            seenP[parent.key] = true;
+            parents.push(parent.key);
+          }
+          matched = true;
+          break;
+        }
+      }
+      if (matched) break;
+    }
+    if (!matched && /待确认|待补充|待整理/.test(t)) {
+      if (!seenC['待整理']) { seenC['待整理'] = true; children.push('待整理'); }
+    }
+  });
+  if (!parents.length && !children.length) {
+    return { parents: [], children: ['待整理'] };
+  }
+  return { parents: parents, children: children };
+}
+
+/** 卡片展示用：AI · RAG调优 */
+function classifyExpTags(tags) {
+  const tree = classifyExpTagTree(tags);
+  const labels = [];
+  const used = {};
+  tree.children.forEach(function (c) {
+    const p = findTagParent(c);
+    const label = p ? (p + ' · ' + c) : c;
+    if (!used[label]) { used[label] = true; labels.push(label); }
+  });
+  tree.parents.forEach(function (p) {
+    const hasChild = tree.children.some(function (c) { return findTagParent(c) === p; });
+    if (!hasChild && !used[p]) { used[p] = true; labels.push(p); }
+  });
+  return labels.length ? labels : ['待整理'];
+}
+
+function expMatchesTagFilter(exp) {
+  const parent = state.expTagParent || '';
+  const child = state.expTagFilter || '';
+  if (!parent && !child) return true;
+  const tree = classifyExpTagTree(exp.tags);
+  if (child) return tree.children.indexOf(child) >= 0;
+  return tree.parents.indexOf(parent) >= 0;
+}
+
+function setExpTagParent(key) {
+  key = key || '';
+  if (!key) {
+    state.expTagParent = '';
+    state.expTagFilter = '';
+  } else if (state.expTagParent === key && !state.expTagFilter) {
+    // 已展开且未选细分时再点 → 收起
+    state.expTagParent = '';
+    state.expTagFilter = '';
+  } else {
+    state.expTagParent = key;
+    if (state.expTagFilter && findTagParent(state.expTagFilter) !== key) {
+      state.expTagFilter = '';
+    }
+  }
+  render();
+}
+
+function setExpTagChild(key) {
+  key = key || '';
+  if (!key) {
+    state.expTagFilter = '';
+  } else if (state.expTagFilter === key) {
+    state.expTagFilter = '';
+  } else {
+    state.expTagFilter = key;
+    const p = findTagParent(key);
+    if (p) state.expTagParent = p;
+    else if (key === '待整理') state.expTagParent = '';
+  }
+  render();
+}
+
+/** 从卡片标签点选：支持「AI」「RAG调优」「AI · RAG调优」 */
+function pickExpTagFromCard(label) {
+  const raw = String(label || '').trim();
+  if (!raw) return;
+  if (raw.indexOf(' · ') >= 0) {
+    const parts = raw.split(' · ');
+    const parent = parts[0];
+    const child = parts.slice(1).join(' · ');
+    state.expTagParent = parent;
+    state.expTagFilter = child;
+    render();
+    return;
+  }
+  if (EXP_TAG_PARENT_KEYS.indexOf(raw) >= 0) {
+    setExpTagParent(raw);
+    return;
+  }
+  if (EXP_TAG_CHILD_INDEX[raw] || raw === '待整理') {
+    setExpTagChild(raw);
+    return;
+  }
+  // 尝试按文案匹配大类 / 细分
+  const parentHit = EXP_TAG_TREE.find(function (p) { return p.key === raw || p.label === raw; });
+  if (parentHit) { setExpTagParent(parentHit.key); return; }
+  toast('未识别的标签：' + raw);
+}
+
+function getVisibleParentTags() {
+  const counts = {};
+  state.experiences.forEach(function (e) {
+    classifyExpTagTree(e.tags).parents.forEach(function (p) {
+      counts[p] = (counts[p] || 0) + 1;
+    });
+  });
+  // 始终展示全部大类，方便点开看细分
+  return EXP_TAG_TREE.map(function (p) {
+    return { key: p.key, label: p.label, count: counts[p.key] || 0, children: p.children };
+  });
+}
+
+function getVisibleChildTags(parentKey) {
+  const node = getTagParentNode(parentKey);
+  if (!node) return [];
+  const counts = {};
+  state.experiences.forEach(function (e) {
+    classifyExpTagTree(e.tags).children.forEach(function (c) {
+      if (findTagParent(c) === parentKey) counts[c] = (counts[c] || 0) + 1;
+    });
+  });
+  // 选中大类后始终列出该大类下全部细分
+  return (node.children || []).map(function (c) {
+    return { key: c.key, count: counts[c.key] || 0 };
+  });
+}
+
+window.setExpTagParent = setExpTagParent;
+window.setExpTagChild = setExpTagChild;
+window.pickExpTagFromCard = pickExpTagFromCard;
+
+function expBriefsForIntro() {
+  return state.experiences.map(function (e) {
+    return {
+      title: e.title,
+      role: e.role,
+      summary: e.summary,
+      metrics: e.metrics || '',
+    };
+  });
+}
+
+function filterExperiences(list) {
+  const q = (state.expSearch || '').trim().toLowerCase();
+  const typeF = state.expTypeFilter || '全部';
+  return (list || []).filter(function (e) {
+    if (typeF !== '全部' && (e.type || '经历') !== typeF) return false;
+    if (!expMatchesTagFilter(e)) return false;
+    if (!q) return true;
+    const tree = classifyExpTagTree(e.tags);
+    const hay = [
+      e.title, e.company, e.role, e.period, e.summary, e.metrics, e.extra, e.type,
+      ...(e.tags || []),
+      ...tree.parents,
+      ...tree.children,
+      ...classifyExpTags(e.tags),
+    ].join(' ').toLowerCase();
+    return hay.indexOf(q) >= 0;
+  });
+}
+
+function countPendingOrganize() {
+  let n = 0;
+  state.experiences.forEach(function (e) {
+    if (classifyExpTagTree(e.tags).children.indexOf('待整理') >= 0) n += 1;
+  });
+  return n;
+}
+
 function guessKnowledgeTags(question) {
   const q = question || '';
   if (/RAG|向量|embedding|大模型|LLM|AI/i.test(q)) return ['技术', 'AI应用', 'RAG调优'];
@@ -335,26 +971,77 @@ function guessKnowledgeTags(question) {
   return ['行为面试'];
 }
 
+function renderHubBack(hub) {
+  const label = hub === 'practice' ? '练习' : (hub === 'review' ? '复习' : '');
+  if (!label) return '';
+  return `<button class="btn btn-ghost btn-sm hub-back" onclick="go('${hub}')">← ${label}</button>`;
+}
+
+function setVoiceTtsMode(mode) {
+  state.voiceTtsMode = mode;
+  localStorage.setItem('cv_tts_mode', mode);
+  render();
+}
+
+function setVoiceSpeaker(id) {
+  state.voiceSpeaker = id || '';
+  localStorage.setItem('cv_tts_speaker', state.voiceSpeaker);
+  render();
+}
+
+function currentVoicePack() {
+  const id = state.voiceSpeaker || state.ttsDefaultSpeaker;
+  return (state.ttsVoices || []).find(function (v) { return v.id === id; }) || null;
+}
+
+function renderVoiceTtsBar() {
+  const configured = state.ttsDoubaoConfigured;
+  const usingDoubao = shouldUseDoubaoTts();
+  const mode = state.voiceTtsMode || 'auto';
+  const voices = state.ttsVoices || [];
+  const speaker = state.voiceSpeaker || state.ttsDefaultSpeaker || (voices[0] && voices[0].id) || '';
+  const pack = currentVoicePack();
+  return `
+    <div class="tip-box" style="margin-bottom:12px">
+      <strong>读题声音</strong>
+      <span class="meta" style="margin-left:8px">${usingDoubao ? '豆包语音' + (pack ? ' · ' + pack.name : '') : '浏览器自带（偏机械，建议接豆包）'}</span>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+        <button class="btn btn-sm ${mode==='doubao'?'btn-active':''}" ${configured?'':'disabled'} onclick="setVoiceTtsMode('doubao')">豆包</button>
+        <button class="btn btn-sm ${mode==='auto'?'btn-active':''}" onclick="setVoiceTtsMode('auto')">自动</button>
+        <button class="btn btn-sm ${mode==='browser'?'btn-active':''}" onclick="setVoiceTtsMode('browser')">浏览器</button>
+        <button class="btn btn-sm" onclick="speakQuestion('这是一段语音试听。请介绍一段你最有代表性的项目经历。')">试听</button>
+      </div>
+      ${configured && voices.length ? `
+      <div class="form-row" style="margin:10px 0 0">
+        <label>面试官音色 <span class="hint">切换后可再点试听</span></label>
+        <select onchange="setVoiceSpeaker(this.value)">
+          ${voices.map(function (v) {
+            return `<option value="${esc(v.id)}" ${v.id===speaker?'selected':''}>${esc(v.gender)} · ${esc(v.name)} — ${esc(v.style || '')}</option>`;
+          }).join('')}
+        </select>
+      </div>` : ''}
+      ${configured ? '' : `<p class="meta" style="margin-top:8px;line-height:1.55">
+        可在后端 <code>.env</code> 配置豆包语音密钥后重启服务，读题会更自然。
+      </p>`}
+    </div>`;
+}
+
 /* ========== navigation ========== */
 function renderNav() {
   let html = '';
-  let lastGroup = '';
-  NAV.forEach(n => {
-    if (n.group !== lastGroup) {
-      html += `<div class="nav-group">${n.group}</div>`;
-      lastGroup = n.group;
-    }
-    const active = state.page === n.id
-      || (state.page === 'notebook-detail' && n.id === 'notebook')
-      || ((state.page === 'debrief' || state.page === 'debrief-detail') && n.id === 'debrief');
+  NAV.forEach(function (n) {
+    let active = state.page === n.id;
+    if (n.id === 'practice') active = PRACTICE_PAGES.indexOf(state.page) >= 0;
+    if (n.id === 'review') active = REVIEW_PAGES.indexOf(state.page) >= 0;
     html += `<button class="${active ? 'active' : ''}" onclick="go('${n.id}')">${n.label}</button>`;
   });
   const p = state.profile || loadProfile();
+  const llm = state.llmEffective || 'mock';
+  const tts = shouldUseDoubaoTts() ? '豆包' : '浏览器';
   const status = state.apiOnline
-    ? '<div class="nav-group">API · ' + (state.llmEffective || 'mock') + '</div>'
-    : '<div class="nav-group" style="color:#c62828">API 未连接</div>';
-  const meChip = '<div class="nav-group">本机 · ' + esc(p.displayName || '未命名') + '</div>';
-  document.getElementById('nav').innerHTML = status + html + meChip;
+    ? '<div class="nav-status">模型 ' + llm + '<br/>读题 ' + tts + '</div>'
+    : '<div class="nav-status" style="color:#ff8a80">后端未连接</div>';
+  document.getElementById('nav').innerHTML = status + html;
 }
 
 function go(page, extra) {
@@ -365,10 +1052,22 @@ function go(page, extra) {
   state.quiz = null;
   state.expForm = null;
   state.resumeParse = null;
-  if (page === 'interview' && extra) {
-    state.interview.expId = extra;
+  if (page === 'interview') {
+    if (extra) {
+      state.interview.expId = extra;
+    } else if (!state.interview.expId && state.experiences.length) {
+      state.interview.expId = state.experiences[0].id;
+    }
     state.interview.phase = 'idle';
     state.interview.activeNodeId = null;
+    state.interview.draft = '';
+    state.interview.mode = null;
+  }
+  if (page === 'voice' && extra) {
+    state.voice.expId = extra;
+    state.voice.phase = 'idle';
+    state.voice.activeNodeId = null;
+    state.voice.draft = '';
   }
   if (page === 'notebook-detail' && extra) {
     state.notebookDetailExpId = extra;
@@ -387,8 +1086,11 @@ function render() {
   const main = document.getElementById('main');
   const map = {
     experience: renderExperience,
+    practice: renderPracticeHub,
+    review: renderReviewHub,
     intro: renderIntro,
     interview: renderInterview,
+    voice: renderVoice,
     notebook: renderNotebook,
     'notebook-detail': renderNotebookDetail,
     knowledge: renderKnowledge,
@@ -404,6 +1106,8 @@ function render() {
     (state.resumeParse ? renderResumeParseModal() : '') +
     (state.addKnowledgeDraft ? renderAddKnowledgeModal() : '') +
     (state.reviewItems ? renderReviewModal() : '') +
+    (state.consolidatePreview ? renderConsolidateModal() : '') +
+    (state.introWizard ? renderIntroWizardModal() : '') +
     (state.introOverlay || '');
 }
 
@@ -423,7 +1127,9 @@ function showLoading(text) {
 }
 
 function hideLoading() {
+  if (!state.loading) return;
   state.loading = null;
+  render();
 }
 
 /* ========== 删除确认（按模块隔离；「今日内跳过」存 localStorage，跨日失效） ========== */
@@ -551,49 +1257,142 @@ function acceptConfirmDialog() {
   render();
 }
 
+function renderPracticeHub() {
+  return `
+    <h1 class="page-title">练习</h1>
+    <p class="page-lead">先用文字把答案打磨清楚，再用语音做正式演练。</p>
+    <div class="hub-grid">
+      <div class="hub-card" onclick="go('intro')">
+        <strong>自我介绍</strong>
+        <p class="meta">生成初稿、润色成稿，或用引导提问组织口述。</p>
+      </div>
+      <div class="hub-card" onclick="go('interview')">
+        <strong>文字准备</strong>
+        <p class="meta">针对单段经历练追问，答案会写入追问树。</p>
+      </div>
+      <div class="hub-card" onclick="go('voice')">
+        <strong>语音面试</strong>
+        <p class="meta">勾选多段经历和岗位要求，听题口述，模拟正式面试。</p>
+      </div>
+    </div>`;
+}
+
+function renderReviewHub() {
+  return `
+    <h1 class="page-title">复习</h1>
+    <p class="page-lead">笔记本保存完整练习过程；知识汇总放必背卡片；面试经历用来复盘真实面试。</p>
+    <div class="hub-grid">
+      <div class="hub-card" onclick="go('notebook')">
+        <strong>面试笔记本</strong>
+        <p class="meta">按经历查看追问树，支持随机提问和归纳相似题。</p>
+      </div>
+      <div class="hub-card" onclick="go('knowledge')">
+        <strong>知识汇总</strong>
+        <p class="meta">跨经历的精炼卡片，适合抽查背诵。</p>
+      </div>
+      <div class="hub-card" onclick="go('debrief')">
+        <strong>面试经历</strong>
+        <p class="meta">粘贴面试转写，自动抽问答、标出弱答并评分。</p>
+      </div>
+    </div>`;
+}
+
 /* ========== ① 经历库 ========== */
 function renderExperience() {
   if (state.expForm) return renderExpForm();
 
+  const filtered = filterExperiences(state.experiences);
+  const typeF = state.expTypeFilter || '全部';
+  const parentF = state.expTagParent || '';
+  const childF = state.expTagFilter || '';
+  const parents = getVisibleParentTags();
+  const children = parentF ? getVisibleChildTags(parentF) : [];
+  const pendingN = countPendingOrganize();
+  const noTagFilter = !parentF && !childF;
+
   return `
-    <h1 class="page-title">① 我的经历库</h1>
-    <div class="flex-between" style="margin-bottom:12px;gap:12px;flex-wrap:wrap">
-      <div class="upload" style="flex:1;margin:0"
+    <h1 class="page-title">经历库</h1>
+    <p class="page-lead">导入或手填简历经历，用类型和能力主题快速筛选，再进入文字准备。</p>
+    <div class="toolbar">
+      <div class="upload"
         onclick="document.getElementById('resume-file').click()"
         ondragover="event.preventDefault();this.classList.add('drag')"
         ondragleave="this.classList.remove('drag')"
         ondrop="onResumeDrop(event)">
-        📄 拖拽或点击上传 PDF / Word（.docx）
-        <div class="meta" style="margin-top:6px">解析后可勾选导入；原文件不落盘。扫描件请改粘贴文本。</div>
+        拖拽或点击上传 PDF / Word（.docx）
+        <div class="meta" style="margin-top:6px">解析后可勾选导入；原文件不会保存到服务器。扫描件请改用下方粘贴文本。</div>
       </div>
       <input type="file" id="resume-file" class="hidden" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onchange="onResumeFileSelected(event)" />
       <button class="btn btn-primary" onclick="openExpForm(null)">＋ 手动添加经历</button>
     </div>
     <div class="card" style="margin-bottom:12px">
       <div class="form-row" style="margin:0">
-        <label>或粘贴简历文本 <span class="hint">没有可选中文字的 PDF 时用这个</span></label>
-        <textarea id="resume-paste" placeholder="把实习/项目那段贴进来…" style="min-height:72px"></textarea>
+        <label>粘贴简历文本 <span class="hint">PDF 无法选中文字时用这个</span></label>
+        <textarea id="resume-paste" placeholder="把实习或项目那段贴进来…" style="min-height:72px"></textarea>
         <button class="btn btn-sm" style="margin-top:8px" onclick="parseResumeText()">解析粘贴文本</button>
       </div>
     </div>
-    ${state.experiences.map(e => `
-      <div class="card">
+    <div class="card filter-card" style="margin-bottom:12px">
+      <div class="form-row" style="margin-bottom:10px">
+        <label>搜索</label>
+        <input type="search" placeholder="公司、角色、标签、摘要…"
+          value="${esc(state.expSearch || '')}"
+          oninput="state.expSearch=this.value;render()" />
+      </div>
+      <div class="form-row" style="margin-bottom:8px">
+        <label>类型</label>
+        <div class="chip-row">
+          ${EXP_TYPES.map(function (t) {
+            return `<span class="tag clickable ${typeF===t?'tag-on':''}" onclick="state.expTypeFilter='${t}';render()">${t}</span>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="form-row" style="margin:0">
+        <label>能力主题 <span class="hint">点大类展开细分；卡片上的标签也可点选</span></label>
+        <div class="chip-row">
+          <span class="tag clickable tag-parent ${noTagFilter?'tag-on':''}" role="button" tabindex="0" onclick="setExpTagParent('')">全部</span>
+          ${parents.map(function (p) {
+            const on = parentF === p.key;
+            return `<span class="tag clickable tag-parent ${on?'tag-on':''}" role="button" tabindex="0" onclick="setExpTagParent('${esc(p.key)}')">${esc(p.label)}${p.count ? ' · ' + p.count : ''}</span>`;
+          }).join('')}
+          ${pendingN ? `<span class="tag clickable tag-parent ${childF==='待整理'?'tag-on':''}" role="button" tabindex="0" onclick="setExpTagChild('待整理')">待整理 · ${pendingN}</span>` : ''}
+        </div>
+        ${parentF ? `
+        <div class="tag-sub-row">
+          <div class="meta" style="margin-bottom:6px">「${esc(parentF)}」下的细分（再点同一大类可收起）</div>
+          <div class="chip-row">
+            ${children.map(function (c) {
+              return `<span class="tag clickable tag-child ${childF===c.key?'tag-on':''}" role="button" tabindex="0" onclick="setExpTagChild('${esc(c.key)}')">${esc(c.key)}${c.count ? ' · ' + c.count : ''}</span>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+        <button class="btn btn-sm" style="margin-top:8px" type="button" onclick="normalizeAllExpTags()">整理全部标签</button>
+      </div>
+      <p class="meta" style="margin-top:12px;margin-bottom:0">共 ${state.experiences.length} 段 · 当前显示 ${filtered.length} 段</p>
+    </div>
+    ${!filtered.length ? '<div class="empty">没有匹配的经历，试试改关键词或清除筛选</div>' : ''}
+    ${filtered.map(e => `
+      <div class="card exp-card">
         <div class="flex-between">
           <div>
-            <strong>${esc(e.title)}</strong>
-            <span class="badge" style="margin-left:6px">${esc(e.type || '经历')}</span>
+            <span class="exp-title">${esc(e.title)}</span>
+            <span class="badge" style="margin-left:8px">${esc(e.type || '经历')}</span>
             <div class="meta" style="margin-top:4px">${esc(e.period)} · ${esc(e.role)}</div>
           </div>
           <div>
             <button class="btn btn-sm" onclick="openExpForm('${e.id}')">编辑</button>
             <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteExperience('${e.id}')">删除</button>
-            <button class="btn btn-primary btn-sm" onclick="go('interview','${e.id}')">进入模拟面试</button>
+            <button class="btn btn-primary btn-sm" onclick="go('interview','${e.id}')">文字准备</button>
           </div>
         </div>
-        <p style="margin:10px 0;line-height:1.5">${esc(e.summary)}</p>
-        ${e.metrics ? `<p class="match-ok" style="font-size:13px">📊 ${esc(e.metrics)}</p>` : ''}
-        ${!e.metrics || e.missingHint ? `<p class="meta" style="margin-top:4px">⚠ ${esc(e.missingHint || '建议补充量化结果，面试容易被追问')}</p>` : ''}
-        <div class="chip-row">${(e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <p style="margin:12px 0;line-height:1.55">${esc(e.summary)}</p>
+        ${e.metrics ? `<p class="match-ok" style="font-size:13px">结果：${esc(e.metrics)}</p>` : ''}
+        ${!e.metrics || e.missingHint ? `<p class="meta" style="margin-top:4px">${esc(e.missingHint || '建议补充可量化的结果，面试容易被追问')}</p>` : ''}
+        <div class="chip-row">${classifyExpTags(e.tags).map(function (t) {
+          const on = (childF && t.indexOf(childF) >= 0) || (parentF && !childF && (t === parentF || t.indexOf(parentF + ' · ') === 0));
+          return `<span class="tag clickable tag-l1 ${on?'tag-on':''}" role="button" title="按此标签筛选" onclick="pickExpTagFromCard('${esc(t)}')">${esc(t)}</span>`;
+        }).join('')}</div>
+        ${(e.tags || []).length && JSON.stringify(classifyExpTags(e.tags)) !== JSON.stringify(e.tags || []) ? `<p class="meta" style="margin-top:4px">原始标签：${(e.tags || []).map(esc).join(' · ')}</p>` : ''}
       </div>
     `).join('')}`;
 }
@@ -883,18 +1682,125 @@ async function deleteExperience(expId, scope) {
   }
 }
 
+async function normalizeAllExpTags() {
+  try {
+    showLoading('正在归纳全部标签…');
+    const exps = await api('/api/experiences/normalize-tags', { method: 'POST', body: '{}' });
+    state.experiences = exps.map(mapExp);
+    hideLoading();
+    toast('标签已整理为主题分类');
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('整理失败：' + e.message);
+    render();
+  }
+}
+
 /* ========== ② 自我介绍 ========== */
 function renderIntro() {
+  const role = (state.profile && state.profile.targetRole) || state.sessionSetup.targetRole || '';
   return `
-    <h1 class="page-title">② 自我介绍打磨</h1>
-    <button class="btn btn-primary" onclick="state.introContent='您好，我是 CHEN，产品方向求职者，有数据分析与 0-1 项目经验…';toast('已生成初稿');render()">AI 生成初稿</button>
-    <button class="btn" onclick="openIntroOverlay('polish')">我自己写，AI 润色</button>
-    <button class="btn" onclick="openIntroOverlay('guide')">AI 引导提问</button>
+    <h1 class="page-title">${renderHubBack('practice')}自我介绍</h1>
+    <p class="page-lead">会结合经历库和目标岗位，帮你生成初稿、润色成稿，或通过引导提问组织口述（当前：${state.llmEffective === 'openai' ? '已接真实模型' : '演示模式'}）。</p>
+    <div class="card" style="margin-bottom:12px">
+      <div class="form-row" style="margin:0">
+        <label>目标岗位 <span class="hint">可选，影响生成侧重点</span></label>
+        <input type="text" placeholder="如：产品经理实习生"
+          value="${esc(role)}"
+          oninput="saveProfile({ targetRole: this.value }); state.sessionSetup.targetRole=this.value" />
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="startIntroAI('generate')">AI 生成初稿</button>
+    <button class="btn" onclick="startIntroAI('polish')">我自己写，AI 润色</button>
+    <button class="btn" onclick="startIntroAI('guide')">AI 引导提问再组织</button>
     <div class="card" style="margin-top:16px">
       <textarea oninput="state.introContent=this.value">${esc(state.introContent)}</textarea>
-      <button class="btn btn-primary" style="margin-top:8px" onclick="toast('定稿已保存')">保存定稿</button>
+      <button class="btn btn-primary" style="margin-top:8px" onclick="toast('定稿已保存（本机）')">保存定稿</button>
       <button class="btn btn-danger" style="margin-top:8px" onclick="clearIntro()">清空自我介绍</button>
     </div>`;
+}
+
+function startIntroAI(mode) {
+  if (mode === 'polish' && !(state.introContent || '').trim()) {
+    toast('请先在编辑区写一些内容，或改用「AI 生成初稿」');
+    return;
+  }
+  state.introWizard = { mode, step: 0, input: '', guideAnswers: [], hint: INTRO_GUIDE_QUESTIONS[0] };
+  if (mode === 'generate') runIntroAI();
+  else render();
+}
+
+async function runIntroAI() {
+  const w = state.introWizard;
+  if (!w) return;
+  const payload = {
+    mode: w.mode,
+    content: state.introContent || '',
+    target_role: (state.profile && state.profile.targetRole) || state.sessionSetup.targetRole || '',
+    guide_answers: w.guideAnswers || [],
+    experiences: expBriefsForIntro(),
+  };
+  try {
+    showLoading(w.mode === 'generate' ? 'AI 正在写初稿…' : (w.mode === 'polish' ? 'AI 正在润色…' : 'AI 正在组织成稿…'));
+    const data = await api('/api/intro', { method: 'POST', body: JSON.stringify(payload) });
+    hideLoading();
+    if (w.mode === 'guide' && data.hint && !(data.content || '').trim()) {
+      w.hint = data.hint;
+      render();
+      return;
+    }
+    if ((data.content || '').trim()) {
+      state.introContent = data.content;
+      state.introWizard = null;
+      toast('已填入编辑区');
+      render();
+      return;
+    }
+    toast('未生成内容，请重试');
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('AI 失败：' + e.message);
+    render();
+  }
+}
+
+function renderIntroWizardModal() {
+  const w = state.introWizard;
+  if (!w || w.mode === 'generate') return '';
+  const title = w.mode === 'polish' ? 'AI 润色' : 'AI 引导提问';
+  return `<div class="modal-bg" onclick="state.introWizard=null;render()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom:12px">${title}</h3>
+      ${w.mode === 'polish' ? `<p class="meta" style="margin-bottom:12px">将保留你的事实，优化口述节奏与亮点排序。</p>` : `
+        <p class="meta" style="margin-bottom:8px">第 ${w.guideAnswers.length + 1} / ${INTRO_GUIDE_QUESTIONS.length} 题</p>
+        <p style="margin-bottom:12px;line-height:1.5">${esc(w.hint || INTRO_GUIDE_QUESTIONS[w.guideAnswers.length])}</p>
+        <textarea placeholder="输入你的回答…" oninput="state.introWizard.input=this.value">${esc(w.input)}</textarea>
+      `}
+      <div style="margin-top:12px">
+        ${w.mode === 'polish' ? `<button class="btn btn-primary" onclick="runIntroAI()">开始润色</button>` : `
+          <button class="btn btn-primary" onclick="submitIntroGuideAnswer()">${w.guideAnswers.length + 1 >= INTRO_GUIDE_QUESTIONS.length ? '生成自我介绍' : '下一题'}</button>
+        `}
+        <button class="btn" onclick="state.introWizard=null;render()">取消</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function submitIntroGuideAnswer() {
+  const w = state.introWizard;
+  if (!w) return;
+  const ans = (w.input || '').trim();
+  if (!ans) { toast('请先回答本题'); return; }
+  w.guideAnswers.push(ans);
+  w.input = '';
+  if (w.guideAnswers.length >= INTRO_GUIDE_QUESTIONS.length) {
+    runIntroAI();
+  } else {
+    w.hint = INTRO_GUIDE_QUESTIONS[w.guideAnswers.length];
+    render();
+  }
 }
 
 async function clearIntro() {
@@ -910,57 +1816,254 @@ async function clearIntro() {
   render();
 }
 
-function openIntroOverlay(mode) {
-  state.introOverlay = `<div class="overlay" onclick="closeOverlay()"><div class="overlay-panel" onclick="event.stopPropagation()">
-    <h3>${mode === 'polish' ? 'AI 润色' : 'AI 引导提问'}</h3>
-    <p style="margin:16px 0;line-height:1.5">AI：${mode === 'polish' ? '已优化表达，突出数据成果与协作能力。' : '你最想突出的 1 个能力是什么？'}</p>
-    <button class="btn btn-primary" onclick="state.introContent+='\\n（AI 处理后）';closeOverlay();toast('已填入编辑区')">完成并填入</button>
-  </div></div>`;
+function openIntroOverlay(mode) { startIntroAI(mode); }
+function closeOverlay() { state.introOverlay = ''; state.introWizard = null; render(); }
+
+/* ========== 投递配置（多经历 + 岗位/JD） ========== */
+function toggleSetupExp(id) {
+  const ids = state.sessionSetup.expIds || [];
+  const i = ids.indexOf(id);
+  if (i >= 0) ids.splice(i, 1);
+  else ids.push(id);
+  state.sessionSetup.expIds = ids;
   render();
 }
-function closeOverlay() { state.introOverlay = ''; render(); }
 
-/* ========== ③ 模拟面试 ========== */
+function selectAllSetupExps() {
+  state.sessionSetup.expIds = state.experiences.map(function (e) { return e.id; });
+  render();
+}
+
+function selectNoneSetupExps() {
+  state.sessionSetup.expIds = [];
+  render();
+}
+
+function renderSessionSetup(channel) {
+  const s = state.sessionSetup;
+  s.channel = channel;
+  const selected = s.expIds || [];
+  return `
+    <div class="card">
+      <h3 style="margin-bottom:8px">投递材料</h3>
+      <p class="meta" style="margin-bottom:12px">勾选本场要覆盖的经历，再填写目标岗位。岗位说明建议一并粘贴，提问会更贴合真实面试。</p>
+      <div class="form-row">
+        <label>选择经历 *</label>
+        ${!state.experiences.length ? '<p class="meta">还没有经历，请先去 <button class="btn btn-sm" onclick="go(\'experience\')">经历库</button> 添加</p>' : ''}
+        ${state.experiences.map(function (e) {
+          const on = selected.indexOf(e.id) >= 0;
+          return `<label class="confirm-skip" style="margin:6px 0">
+            <input type="checkbox" ${on ? 'checked' : ''} onchange="toggleSetupExp('${e.id}')" />
+            <span><strong>${esc(e.title)}</strong><span class="meta"> · ${esc(e.period)} · ${esc(e.role)}</span></span>
+          </label>`;
+        }).join('')}
+        <div style="margin-top:6px">
+          <button class="btn btn-sm" type="button" onclick="selectAllSetupExps()">全选</button>
+          <button class="btn btn-sm" type="button" onclick="selectNoneSetupExps()">全不选</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>目标岗位 *</label>
+        <input type="text" id="sess-role" value="${esc(s.targetRole || '')}" placeholder="如：产品经理 / 后端实习生"
+          oninput="state.sessionSetup.targetRole=this.value" />
+        <div class="chip-row" style="margin-top:6px">
+          ${['产品经理','产品实习生','数据分析','后端开发','前端开发'].map(function (r) {
+            return `<span class="tag clickable" onclick="state.sessionSetup.targetRole='${r}';render()">${r}</span>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="form-row">
+        <label>岗位说明 <span class="hint">建议粘贴职责与任职要求，便于交叉提问</span></label>
+        <textarea id="sess-jd" style="min-height:100px" placeholder="粘贴岗位职责、任职要求…"
+          oninput="state.sessionSetup.jdText=this.value">${esc(s.jdText || '')}</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="startSession('voice')">开始语音面试</button>
+      <p class="meta" style="margin-top:8px">已选 ${selected.length} 段经历</p>
+    </div>`;
+}
+
+function renderCoverageBar(session) {
+  if (!session) return '';
+  const covered = session.covered_exp_ids || [];
+  const all = session.exp_ids || [];
+  return `
+    <div class="summary-bar" style="margin-bottom:12px">
+      <strong>简历覆盖</strong>
+      <span class="meta" style="margin-left:8px">${covered.length}/${all.length} 段已被提问</span>
+      <div class="chip-row" style="margin-top:8px">
+        ${all.map(function (id) {
+          const e = getExpById(id);
+          const on = covered.indexOf(id) >= 0;
+          return `<span class="tag ${on ? 'tag-l1' : ''}">${on ? '✓ ' : ''}${esc(e ? e.title : id)}</span>`;
+        }).join('')}
+      </div>
+      ${session.target_role ? `<p class="meta" style="margin-top:6px">岗位：${esc(session.target_role)}</p>` : ''}
+    </div>`;
+}
+
+async function startSession(channel) {
+  if (channel !== 'voice') return;
+  const s = state.sessionSetup;
+  s.targetRole = (document.getElementById('sess-role') && document.getElementById('sess-role').value) || s.targetRole || '';
+  s.jdText = (document.getElementById('sess-jd') && document.getElementById('sess-jd').value) || s.jdText || '';
+  if (!(s.expIds || []).length) { toast('请至少勾选一段经历'); return; }
+  if (!(s.targetRole || '').trim()) { toast('请填写目标岗位'); return; }
+  try {
+    showLoading('面试官正在根据你的投递材料出题…');
+    const data = await api('/api/sessions/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        exp_ids: s.expIds,
+        target_role: s.targetRole,
+        jd_text: s.jdText,
+        channel: 'voice',
+      }),
+    });
+    state.session = data;
+    const v = state.voice;
+    v.phase = data.phase || 'question';
+    v.activeNodeId = data.active_node_id;
+    v.currentQ = data.question || '';
+    v.draft = '';
+    v.expId = (data.exp_ids && data.exp_ids[0]) || v.expId;
+    hideLoading();
+    render();
+    speakQuestion(v.currentQ);
+    toast('已覆盖 ' + (data.covered_exp_ids || []).length + ' 段 · 共 ' + (data.exp_ids || []).length + ' 段');
+  } catch (e) {
+    hideLoading();
+    toast('开始失败：' + e.message);
+    render();
+  }
+}
+
+function getSessionNode() {
+  if (!state.session || state.page !== 'voice') return null;
+  const id = state.voice.activeNodeId;
+  return id ? findNode(state.session.qa_tree || [], id) : null;
+}
+
+function getInterviewNode() {
+  const exp = getExp();
+  const id = state.interview.activeNodeId;
+  if (!exp || !id) return null;
+  return findNode(exp.qaTree, id);
+}
+
+function resetSessionToSetup(channel) {
+  stopVoiceListen();
+  stopVoiceSpeak();
+  state.session = null;
+  state.voice.phase = 'idle';
+  state.voice.activeNodeId = null;
+  state.voice.draft = '';
+  render();
+}
+
+/* ========== ③ 文字准备（追问树） ========== */
+function renderScoreBlock(node) {
+  if (!node) return '';
+  const dims = node.scoreDims || node.score_dims || {};
+  const score = node.score != null ? Number(node.score) : null;
+  const hints = node.scoreHints || node.score_hints || [];
+  if (score == null && !Object.keys(dims).length) return '';
+  return `
+    <div class="score-row">
+      ${score != null ? `<span class="score-num">${score}</span><span class="meta">/100</span>
+      <div class="score-bar"><i style="width:${Math.max(0, Math.min(100, score))}%"></i></div>` : ''}
+    </div>
+    <div class="score-dims">
+      ${Object.keys(SCORE_DIM_LABELS).map(function (k) {
+        const v = dims[k];
+        if (v == null) return '';
+        return `<span class="score-dim">${SCORE_DIM_LABELS[k]} ${v}/10</span>`;
+      }).join('')}
+    </div>
+    ${hints.length ? `<p class="meta" style="margin-top:6px">${hints.map(esc).join(' · ')}</p>` : ''}
+  `;
+}
+
+function debriefItemScore(it) {
+  if (it == null || it.score == null) return null;
+  const n = Number(it.score);
+  return isNaN(n) ? null : n;
+}
+
+function debriefScoreSummary(items) {
+  const scored = (items || []).map(debriefItemScore).filter(function (s) { return s != null; });
+  if (!scored.length) return null;
+  const avg = Math.round(scored.reduce(function (a, b) { return a + b; }, 0) / scored.length);
+  return { avg, count: scored.length, total: (items || []).length };
+}
+
+function renderDebriefScoreBadge(it) {
+  const s = debriefItemScore(it);
+  if (s == null) return '';
+  return `<span class="badge" style="margin-left:6px">${s}/100</span>`;
+}
+
 function renderInterview() {
   const iv = state.interview;
+  if (!state.experiences.length) {
+    return `
+      <h1 class="page-title">${renderHubBack('practice')}文字准备</h1>
+      <p class="page-lead">针对单段经历打磨答案，并生成可回看的追问树。</p>
+      <div class="empty">还没有经历。请先去 <button class="btn btn-sm" onclick="go('experience')">经历库</button> 添加或上传简历。</div>`;
+  }
+  if (!iv.expId || !getExpById(iv.expId)) {
+    iv.expId = state.experiences[0].id;
+  }
   const exp = getExp();
-  if (!exp) return `<div class="empty">请先在经历库添加经历</div>`;
-  const node = iv.activeNodeId ? findNode(exp.qaTree, iv.activeNodeId) : null;
-  const inKnowledge = node && state.knowledge.some(k => k.source?.expId === exp.id && k.source?.nodeId === node.nodeId);
+  const node = getInterviewNode();
+  const inKnowledge = node && state.knowledge.some(function (k) {
+    return k.source && k.source.expId === exp.id && k.source.nodeId === node.nodeId;
+  });
+  const phaseLabel = { idle: '待开始', question: '等待作答', answering: '作答中', feedback: '已点评' };
 
   return `
-    <h1 class="page-title">③ 模拟面试 <span class="badge">${esc(iv.phase)}</span></h1>
+    <h1 class="page-title">${renderHubBack('practice')}文字准备 <span class="badge accent">打磨答案</span></h1>
+    <p class="page-lead">选择一段经历开始提问。需要正式听题口述时，请用 <button class="btn btn-sm" onclick="go('voice')">语音面试</button>。</p>
     <div class="interview">
       <div class="col-left">
-        <select onchange="state.interview.expId=this.value;state.interview.phase='idle';state.interview.activeNodeId=null;render()">
-          ${state.experiences.map(e => `<option value="${e.id}" ${e.id===iv.expId?'selected':''}>${esc(e.title)}</option>`).join('')}
-        </select>
+        <div class="panel-head">
+          <select style="max-width:min(100%,360px)" onchange="state.interview.expId=this.value;state.interview.phase='idle';state.interview.activeNodeId=null;state.interview.draft='';render()">
+            ${state.experiences.map(function (e) {
+              return `<option value="${e.id}" ${e.id===iv.expId?'selected':''}>${esc(e.title)}</option>`;
+            }).join('')}
+          </select>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="stage-pill ${iv.phase!=='idle'?'on':''}">${phaseLabel[iv.phase] || iv.phase}</span>
+            ${iv.phase === 'idle' ? `<button class="btn btn-primary" onclick="startInterview()">开始提问</button>` : ''}
+          </div>
+        </div>
         ${iv.phase === 'idle' ? `
-          <div class="empty">
-            <p>AI 准备就绪</p>
-            <button class="btn btn-primary" onclick="startInterview()">开始提问</button>
-          </div>` : `
+          <div class="empty-panel">
+            <p>准备好了就可以开始</p>
+            <p class="meta">AI 会围绕这段经历提问；你的回答会写进右侧追问树。</p>
+          </div>
+        ` : `
           <div class="question-box">${esc(iv.currentQ)}</div>
-          ${node?.triggerFrom ? `<p class="meta" style="margin-bottom:8px">🔗 ${esc(node.triggerFrom)}</p>` : ''}
-          <div style="margin-bottom:12px">
+          ${node && node.triggerFrom ? `<p class="meta" style="margin-bottom:8px">追问来源：${esc(node.triggerFrom)}</p>` : ''}
+          <div class="answer-actions">
             <button class="btn ${iv.mode==='user_answered'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('user_answered')">自己答</button>
             <button class="btn ${iv.mode==='ai_generated'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('ai_generated')">AI 代答</button>
-            <button class="btn ${iv.mode==='framework_only'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('framework_only')">看框架再填</button>
+            <button class="btn ${iv.mode==='framework_only'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('framework_only')">先看框架再填</button>
           </div>
           ${iv.phase==='answering'||iv.phase==='feedback' ? `
-            <textarea ${iv.phase==='feedback'?'disabled':''} oninput="state.interview.draft=this.value">${esc(iv.draft)}</textarea>
+            <textarea ${iv.phase==='feedback'?'disabled':''} oninput="state.interview.draft=this.value" placeholder="在这里写下你的回答…">${esc(iv.draft)}</textarea>
             ${iv.phase==='answering' ? `<button class="btn btn-primary" style="margin-top:8px" onclick="submitAnswer()">提交回答</button>` : ''}
           ` : ''}
           ${iv.phase==='feedback' && node ? `
-            <div class="feedback"><strong>AI 点评</strong><p style="margin-top:6px">${esc(node.aiFeedback||'')}</p>
-              ${(node.knowledgeTags||[]).map(t=>`<span class="tag tag-l1">${esc(t)}</span>`).join('')}
+            <div class="feedback"><strong>AI 点评</strong>
+              ${renderScoreBlock(node)}
+              <p style="margin-top:6px">${esc(node.aiFeedback||'')}</p>
+              ${(node.knowledgeTags||[]).map(function (t) { return `<span class="tag tag-l1">${esc(t)}</span>`; }).join('')}
             </div>
-            <div style="margin-top:auto;padding-top:16px;border-top:1px solid #eee">
-              <p class="meta" style="margin-bottom:8px">下一步（当前节点 ${esc(iv.activeNodeId||iv.branchFrom)}）</p>
-              <p class="meta" style="margin-bottom:8px">深挖/发散 → ↓子节点（q1.1→q1.1.1）；换角度 → →同级（q1.1→q1.2）</p>
-              <button class="btn" onclick="nextStep('deep_dive')" title="本题下继续追问">深挖（↓子节点）</button>
-              <button class="btn" onclick="nextStep('new_angle')" title="同项目换侧面，同级新开一条">换角度（→同级）</button>
-              <button class="btn" onclick="nextStep('diverge')" title="抓住上一答里的词追问">发散追问（↓子节点）</button>
+            <div class="next-actions">
+              <p class="meta" style="margin-bottom:8px">下一步</p>
+              <button class="btn btn-primary" onclick="nextStep('deep_dive')">深挖下一问</button>
+              <button class="btn" onclick="nextStep('new_angle')">换角度</button>
+              <button class="btn" onclick="nextStep('diverge')">发散</button>
               <button class="btn" onclick="nextStep('switch_exp')">换经历</button>
               <button class="btn" onclick="nextStep('end')">结束</button>
             </div>
@@ -968,34 +2071,77 @@ function renderInterview() {
         `}
       </div>
       <div class="col-right">
-        <h4 style="margin-bottom:10px">追问树（点击跳转 & 分支）</h4>
-        ${exp.qaTree.length ? renderTree(exp.qaTree, iv.activeNodeId) : '<p class="meta">开始面试后展开</p>'}
+        <div class="panel-head"><h3>追问树</h3></div>
+        ${(exp.qaTree || []).length ? renderTree(exp.qaTree, iv.activeNodeId, 0, { mode: 'exp', expId: exp.id }) : '<p class="meta">开始提问后这里会展开题目结构</p>'}
         ${node ? `
           <hr class="divider" />
-          <button class="btn btn-sm ${node.marks.includes('star')?'btn-active':''}" onclick="toggleMark('star')">⭐ 重点</button>
-          <button class="btn btn-sm ${node.marks.includes('practice')?'btn-active':''}" onclick="toggleMark('practice')">✍️ 待练习</button>
-          <button class="btn btn-sm ${inKnowledge?'btn-active':''}" onclick="openAddKnowledge('${exp.id}','${node.nodeId}')">
-            ${inKnowledge ? '✓ 已在知识汇总' : '📚 加入知识汇总'}
+          <div class="chip-row">${(node.labels || []).map(function (l) { return `<span class="tag">${esc(l)}</span>`; }).join('')}</div>
+          <button class="btn btn-sm ${node.marks && node.marks.includes('star')?'btn-active':''}" onclick="toggleMark('star')">标为重点</button>
+          <button class="btn btn-sm ${node.marks && node.marks.includes('practice')?'btn-active':''}" onclick="toggleMark('practice')">标为待练习</button>
+          <button class="btn btn-sm ${inKnowledge?'btn-active':''}" style="margin-top:8px" onclick="openAddKnowledge('${exp.id}','${node.nodeId}')">
+            ${inKnowledge ? '已在知识汇总' : '加入知识汇总'}
           </button>
-          <button class="btn btn-sm btn-danger" onclick="deleteTreeNode('${exp.id}','${node.nodeId}')">删除本题</button>
         ` : ''}
-        <button class="btn btn-sm" style="margin-top:16px" onclick="go('notebook-detail','${exp.id}')">查看本经历笔记 →</button>
+        <button class="btn btn-sm" style="margin-top:12px" onclick="go('notebook')">查看面试笔记本</button>
       </div>
     </div>`;
 }
 
-function renderTree(tree, activeId, depth = 0) {
-  return (tree || []).map(n => `
+function renderTree(tree, activeId, depth, treeOpts) {
+  depth = depth || 0;
+  treeOpts = treeOpts || { mode: 'exp', expId: '' };
+  const mode = treeOpts.mode || 'exp';
+  const expId = treeOpts.expId || '';
+  return (tree || []).map(function (n) {
+    const delClick = mode === 'session'
+      ? `event.stopPropagation();toast('会话树请用归档，勿直接删除')`
+      : `event.stopPropagation();deleteTreeNode('${expId}','${n.nodeId}')`;
+    const archived = n.archivedToExpId && n.archivedToNodeId;
+    const archiveBtn = mode === 'session'
+      ? (archived
+        ? `<button type="button" class="tree-del" title="已归档到笔记本" onclick="event.stopPropagation();toast('已归档到笔记本')">✓</button>`
+        : `<button type="button" class="tree-del" title="归档到笔记本" onclick="event.stopPropagation();archiveSessionNode('${n.nodeId}')">归档</button>`)
+      : '';
+    const actionBtn = mode === 'session' ? archiveBtn : `<button type="button" class="tree-del" title="删除本题" onclick="${delClick}">×</button>`;
+    return `
     <div style="margin-left:${depth * 14}px">
       <div class="tree-node ${activeId===n.nodeId?'active':''}" onclick="selectNode('${n.nodeId}')">
         <div class="tree-label">
           <small style="color:#888">${esc(n.nodeId)}</small> ${esc(n.question.slice(0, 36))}${n.question.length>36?'…':''}
           ${n.answer ? '<span class="badge">已答</span>' : ''}
+          ${archived ? '<span class="badge">已归档</span>' : ''}
         </div>
-        <button type="button" class="tree-del" title="删除本题及子追问" onclick="event.stopPropagation();deleteTreeNode(state.interview.expId,'${n.nodeId}')">×</button>
+        ${actionBtn}
       </div>
-      ${renderTree(n.children, activeId, depth + 1)}
-    </div>`).join('');
+      ${renderTree(n.children, activeId, depth + 1, treeOpts)}
+    </div>`;
+  }).join('');
+}
+
+async function archiveSessionNode(nodeId) {
+  if (!state.session) { toast('没有进行中的语音会话'); return; }
+  const node = findNode(state.session.qa_tree || [], nodeId);
+  if (!node) { toast('节点不存在'); return; }
+  if (node.archivedToExpId && node.archivedToNodeId) {
+    toast('该题已归档过');
+    return;
+  }
+  try {
+    showLoading('归档到笔记本…');
+    const data = await api('/api/sessions/' + state.session.id + '/archive-node', {
+      method: 'POST',
+      body: JSON.stringify({ node_id: nodeId }),
+    });
+    state.session = data.session;
+    replaceExp(mapExp(data.experience));
+    hideLoading();
+    toast(data.message || '已归档到笔记本');
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('归档失败：' + e.message);
+    render();
+  }
 }
 
 async function deleteTreeNode(expId, nodeId) {
@@ -1057,12 +2203,28 @@ async function startInterview() {
 }
 
 function selectNode(id) {
+  if (state.page === 'voice' && state.session) {
+    const n = findNode(state.session.qa_tree || [], id);
+    if (!n) return;
+    stopVoiceListen();
+    const v = state.voice;
+    v.activeNodeId = id;
+    v.currentQ = n.question;
+    v.draft = n.answer || '';
+    v.phase = n.answer ? 'feedback' : 'question';
+    render();
+    return;
+  }
   const exp = getExp();
+  if (!exp) return;
   const n = findNode(exp.qaTree, id);
   if (!n) return;
   const iv = state.interview;
-  iv.activeNodeId = id; iv.currentQ = n.question; iv.draft = n.answer || '';
-  iv.branchFrom = id; iv.mode = n.answerMode || null;
+  iv.activeNodeId = id;
+  iv.currentQ = n.question;
+  iv.draft = n.answer || '';
+  iv.branchFrom = id;
+  iv.mode = n.answerMode || null;
   iv.phase = n.answer ? 'feedback' : 'question';
   render();
 }
@@ -1076,7 +2238,7 @@ async function pickMode(mode) {
     render();
     return;
   }
-  if (!iv.activeNodeId) { toast('请先开始提问'); return; }
+  if (!iv.activeNodeId || !iv.expId) { toast('请先开始提问'); return; }
   try {
     showLoading(mode === 'ai_generated' ? 'AI 正在按本题生成参考答案…' : 'AI 正在生成答题框架…');
     const data = await api('/api/interview/' + iv.expId + '/draft', {
@@ -1095,8 +2257,10 @@ async function pickMode(mode) {
 
 async function submitAnswer() {
   const iv = state.interview;
+  if (!iv.expId || !iv.activeNodeId) { toast('请先开始提问'); return; }
   try {
-    const data = await api('/api/interview/' + iv.expId + '/answer', {
+    showLoading('正在点评…');
+    await api('/api/interview/' + iv.expId + '/answer', {
       method: 'POST',
       body: JSON.stringify({
         node_id: iv.activeNodeId,
@@ -1108,26 +2272,45 @@ async function submitAnswer() {
     replaceExp(mapExp(full));
     iv.phase = 'feedback';
     iv.branchFrom = iv.activeNodeId;
+    hideLoading();
     render();
-    toast(data.ai_feedback ? '已点评并落库' : '已提交');
+    toast('已点评并落库');
   } catch (e) {
+    hideLoading();
     toast('提交失败：' + e.message);
   }
 }
 
 async function nextStep(action) {
   const iv = state.interview;
-  if (action === 'end') { iv.phase = 'idle'; iv.activeNodeId = null; render(); return; }
-  if (action === 'switch_exp') {
-    const others = state.experiences.filter(e => e.id !== iv.expId);
-    if (others.length) { iv.expId = others[0].id; iv.phase = 'idle'; iv.activeNodeId = null; }
-    render(); return;
+  if (action === 'end') {
+    iv.phase = 'idle';
+    iv.activeNodeId = null;
+    iv.currentQ = '';
+    iv.draft = '';
+    iv.mode = null;
+    render();
+    return;
   }
-  // 必须以「当前正在看的节点」为基准（不要用可能过期的 branchFrom 优先）
-  // 后端：深挖/发散 → 子节点；换角度 → 同级兄弟
+  if (action === 'switch_exp') {
+    const others = state.experiences.filter(function (e) { return e.id !== iv.expId; });
+    if (others.length) {
+      iv.expId = others[0].id;
+      iv.phase = 'idle';
+      iv.activeNodeId = null;
+      iv.currentQ = '';
+      iv.draft = '';
+      iv.mode = null;
+    } else {
+      toast('没有其他经历可切换');
+    }
+    render();
+    return;
+  }
   const fromNodeId = iv.activeNodeId || iv.branchFrom;
   if (!fromNodeId) { toast('请先选中一个节点'); return; }
   try {
+    showLoading('生成下一问…');
     const data = await api('/api/interview/' + iv.expId + '/next', {
       method: 'POST',
       body: JSON.stringify({ from_node_id: fromNodeId, action }),
@@ -1140,10 +2323,11 @@ async function nextStep(action) {
     iv.mode = null;
     iv.phase = data.phase || 'question';
     iv.branchFrom = data.active_node_id;
-    const createdId = (data.new_node && data.new_node.nodeId) || data.active_node_id;
-    toast((action === 'new_angle' ? '已同级分叉 → ' : '已向下追问 → ') + createdId);
+    hideLoading();
     render();
+    toast('已追问 → ' + data.active_node_id);
   } catch (e) {
+    hideLoading();
     toast('下一步失败：' + e.message);
   }
 }
@@ -1163,6 +2347,287 @@ async function toggleMark(m) {
     render();
   } catch (e) {
     toast('标记失败：' + e.message);
+  }
+}
+
+/* ========== ④ 语音面试 ========== */
+let _voiceRecognition = null;
+let _voiceAudio = null;
+
+function shouldUseDoubaoTts() {
+  const mode = state.voiceTtsMode || 'auto';
+  if (mode === 'browser') return false;
+  if (mode === 'doubao') return state.ttsDoubaoConfigured;
+  return state.ttsEffective === 'doubao';
+}
+
+function cycleVoiceTtsMode() {
+  const order = state.ttsDoubaoConfigured ? ['doubao', 'auto', 'browser'] : ['auto', 'browser'];
+  const i = order.indexOf(state.voiceTtsMode || 'auto');
+  setVoiceTtsMode(order[(i + 1) % order.length]);
+  toast('朗读：' + (state.voiceTtsMode === 'doubao' ? '豆包' : state.voiceTtsMode === 'browser' ? '浏览器' : '自动'));
+}
+
+function speakQuestionBrowser(text) {
+  if (!window.speechSynthesis) {
+    toast('当前浏览器不支持朗读');
+    return;
+  }
+  stopVoiceSpeak();
+  stopVoiceListen();
+  const u = new SpeechSynthesisUtterance(text || '');
+  u.lang = 'zh-CN';
+  u.rate = 1;
+  state.voice.speaking = true;
+  u.onend = function () { state.voice.speaking = false; render(); };
+  u.onerror = function () { state.voice.speaking = false; render(); };
+  window.speechSynthesis.speak(u);
+  render();
+}
+
+async function speakQuestion(text) {
+  stopVoiceListen();
+  if (!shouldUseDoubaoTts()) {
+    speakQuestionBrowser(text);
+    return;
+  }
+  stopVoiceSpeak();
+  state.voice.speaking = true;
+  render();
+  try {
+    const res = await fetch(API_BASE + '/api/voice/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: text || '',
+        speaker: state.voiceSpeaker || state.ttsDefaultSpeaker || null,
+      }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    _voiceAudio = new Audio(URL.createObjectURL(blob));
+    _voiceAudio.onended = function () {
+      state.voice.speaking = false;
+      render();
+    };
+    _voiceAudio.onerror = function () {
+      state.voice.speaking = false;
+      toast('豆包朗读播放失败，已切浏览器');
+      speakQuestionBrowser(text);
+    };
+    await _voiceAudio.play();
+  } catch (e) {
+    state.voice.speaking = false;
+    toast('豆包朗读失败，改用浏览器：' + e.message);
+    speakQuestionBrowser(text);
+  }
+}
+
+function getVoiceSpeechRecognition() {
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  return Ctor || null;
+}
+
+function stopVoiceListen() {
+  try { if (_voiceRecognition) _voiceRecognition.stop(); } catch (e) {}
+  _voiceRecognition = null;
+  state.voice.listening = false;
+}
+
+function stopVoiceSpeak() {
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+  try {
+    if (_voiceAudio) {
+      _voiceAudio.pause();
+      _voiceAudio = null;
+    }
+  } catch (e2) {}
+  state.voice.speaking = false;
+}
+
+function toggleVoiceListen() {
+  const Ctor = getVoiceSpeechRecognition();
+  if (!Ctor) {
+    toast('当前浏览器不支持语音识别，请改用打字，或换 Chrome');
+    return;
+  }
+  if (state.voice.listening) {
+    stopVoiceListen();
+    render();
+    return;
+  }
+  stopVoiceSpeak();
+  const rec = new Ctor();
+  _voiceRecognition = rec;
+  rec.lang = 'zh-CN';
+  rec.continuous = true;
+  rec.interimResults = true;
+  let finalBuf = state.voice.draft || '';
+  rec.onresult = function (ev) {
+    let interim = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const t = ev.results[i][0].transcript;
+      if (ev.results[i].isFinal) finalBuf += t;
+      else interim += t;
+    }
+    state.voice.draft = (finalBuf + interim).trim();
+    render();
+  };
+  rec.onerror = function (ev) {
+    stopVoiceListen();
+    toast('语音识别：' + (ev.error || '失败'));
+    render();
+  };
+  rec.onend = function () {
+    state.voice.listening = false;
+    _voiceRecognition = null;
+    render();
+  };
+  try {
+    rec.start();
+    state.voice.listening = true;
+    toast('正在听…再说完点「停止听写」');
+    render();
+  } catch (e) {
+    toast('无法启动麦克风：' + e.message);
+  }
+}
+
+function getVoiceExp() {
+  const id = state.voice.expId || state.interview.expId;
+  return getExpById(id) || state.experiences[0];
+}
+
+function renderVoice() {
+  const v = state.voice;
+  if (!state.session) {
+    return `
+      <h1 class="page-title">${renderHubBack('practice')}语音面试 <span class="badge accent">正式演练</span></h1>
+      <p class="page-lead">先勾选要覆盖的经历并填写岗位要求，再听题口述。文字打磨请用 <button class="btn btn-sm" onclick="go('interview')">文字准备</button>。推荐 Chrome；听写不可用时可直接打字。</p>
+      ${renderVoiceTtsBar()}
+      ${renderSessionSetup('voice')}`;
+  }
+  if (v.phase === 'idle' && state.session.active_node_id) {
+    v.activeNodeId = state.session.active_node_id;
+    v.currentQ = state.session.question || v.currentQ;
+    v.phase = 'question';
+  }
+  const sess = state.session;
+  const node = getSessionNode();
+  const sttOk = !!getVoiceSpeechRecognition();
+  const ttsOk = !!window.speechSynthesis;
+
+  return `
+    <h1 class="page-title">${renderHubBack('practice')}语音面试 <span class="badge accent">正式演练</span></h1>
+    ${renderVoiceTtsBar()}
+    ${renderCoverageBar(sess)}
+    <div class="tip-box" style="margin-bottom:12px">
+      <strong>怎么用</strong>
+      <ol>
+        <li>听完题目 → 点「开始听写」口述 → 改错字后提交</li>
+        <li>优先点「问下一段简历经历」，把勾选的段落都覆盖到</li>
+      </ol>
+      <p class="meta" style="margin-top:6px">朗读 ${ttsOk ? '可用' : '不可用'} · 听写 ${sttOk ? '可用' : '不可用'}</p>
+    </div>
+    <div class="interview">
+      <div class="col-left">
+        <div class="question-box">${esc(v.currentQ)}</div>
+        ${node?.targetExpTitle ? `<p class="meta" style="margin-bottom:8px">当前锚定经历：${esc(node.targetExpTitle)}</p>` : ''}
+        <div class="answer-actions">
+          <button class="btn btn-sm" onclick="speakQuestion(state.voice.currentQ)" ${v.speaking?'disabled':''}>${v.speaking ? '朗读中…' : '再读一遍题'}</button>
+          <button class="btn btn-sm voice-btn ${v.listening?'recording':''}" onclick="toggleVoiceListen()" ${v.phase==='feedback'?'disabled':''}>
+            ${v.listening ? '停止听写' : '开始听写'}
+          </button>
+        </div>
+        ${v.phase === 'question' || v.phase === 'answering' || v.phase === 'feedback' ? `
+          <textarea ${v.phase==='feedback'?'disabled':''} placeholder="口述内容会出现在这里，也可直接打字"
+            oninput="state.voice.draft=this.value;state.voice.phase=state.voice.phase==='question'?'answering':state.voice.phase">${esc(v.draft)}</textarea>
+          ${v.phase !== 'feedback' ? `<button class="btn btn-primary" style="margin-top:8px" onclick="submitVoiceAnswer()">提交口述答案</button>` : ''}
+        ` : ''}
+        ${v.phase === 'feedback' && node ? `
+          <div class="feedback"><strong>AI 点评</strong>
+            ${renderScoreBlock(node)}
+            <p style="margin-top:6px">${esc(node.aiFeedback || '')}</p>
+          </div>
+          <div class="next-actions">
+            <button class="btn btn-primary" onclick="voiceNext('cover_next')">问下一段简历经历</button>
+            <button class="btn" onclick="voiceNext('deep_dive')">深挖下一问</button>
+            <button class="btn" onclick="voiceNext('new_angle')">换角度</button>
+            <button class="btn" onclick="voiceNext('diverge')">发散</button>
+            <button class="btn" onclick="resetSessionToSetup('voice')">结束并重新投递</button>
+          </div>
+        ` : ''}
+      </div>
+      <div class="col-right">
+        <div class="panel-head"><h3>本场追问树</h3></div>
+        <p class="meta" style="margin-bottom:8px">点归档，把题目写入对应经历的面试笔记本。</p>
+        ${(sess.qa_tree || []).length ? renderTree(sess.qa_tree, v.activeNodeId, 0, { mode: 'session' }) : '<p class="meta">开始后这里会展开</p>'}
+        ${node ? `
+          <hr class="divider" />
+          <button class="btn btn-sm ${node.archivedToExpId?'btn-active':''}" onclick="archiveSessionNode('${node.nodeId}')">
+            ${node.archivedToExpId ? '已归档到笔记本' : '归档当前题到笔记本'}
+          </button>
+        ` : ''}
+        <button class="btn btn-sm" style="margin-top:8px" onclick="go('notebook')">查看面试笔记本</button>
+        <button class="btn btn-sm" style="margin-top:8px" onclick="go('interview')">回到文字准备</button>
+      </div>
+    </div>`;
+}
+
+async function startVoiceInterview() {
+  await startSession('voice');
+}
+
+async function submitVoiceAnswer() {
+  const v = state.voice;
+  stopVoiceListen();
+  if (!state.session) { toast('请先开始投递面试'); return; }
+  if (!(v.draft || '').trim()) { toast('还没有口述/文字内容'); return; }
+  try {
+    showLoading('正在点评口述…');
+    await api('/api/sessions/' + state.session.id + '/answer', {
+      method: 'POST',
+      body: JSON.stringify({
+        node_id: v.activeNodeId,
+        answer: v.draft,
+        answer_mode: 'user_answered',
+      }),
+    });
+    state.session = await api('/api/sessions/' + state.session.id);
+    v.phase = 'feedback';
+    hideLoading();
+    render();
+    toast('已点评');
+  } catch (e) {
+    hideLoading();
+    toast('提交失败：' + e.message);
+    render();
+  }
+}
+
+async function voiceNext(action) {
+  const v = state.voice;
+  stopVoiceListen();
+  stopVoiceSpeak();
+  if (!state.session || !v.activeNodeId) { toast('请先完成一题'); return; }
+  try {
+    showLoading('生成下一问…');
+    const data = await api('/api/sessions/' + state.session.id + '/next', {
+      method: 'POST',
+      body: JSON.stringify({ from_node_id: v.activeNodeId, action }),
+    });
+    state.session = data;
+    v.activeNodeId = data.active_node_id;
+    v.currentQ = data.question;
+    v.draft = '';
+    v.phase = data.phase || 'question';
+    hideLoading();
+    render();
+    speakQuestion(v.currentQ);
+  } catch (e) {
+    hideLoading();
+    toast('下一问失败：' + e.message);
+    render();
   }
 }
 
@@ -1265,13 +2730,20 @@ async function saveKnowledge() {
   }
 }
 
-/* ========== ④ 面试笔记本 ========== */
+/* ========== ⑤ 面试笔记本 ========== */
 function renderNotebook() {
   return `
-    <h1 class="page-title">④ 面试笔记本</h1>
-    <p class="meta" style="margin-bottom:12px">自我介绍可展开；经历点开进入详情页（追问树 + AI 归纳）</p>
+    <h1 class="page-title">${renderHubBack('review')}面试笔记本</h1>
+    <p class="page-lead">按经历保存完整问答与点评。需要背诵的重点题，可以升格到知识汇总。</p>
+    <div class="tip-box" style="margin-bottom:12px">
+      <strong>和知识汇总怎么分工</strong>
+      <ul style="margin:8px 0 0 1.2em;line-height:1.6">
+        <li><strong>面试笔记本</strong>：完整练习档案（含追问树与点评）。文字准备会自动写入；语音面试可点「归档」。</li>
+        <li><strong>知识汇总</strong>：从笔记本或面试经历升格出来的精炼卡片，适合跨经历抽查。</li>
+      </ul>
+    </div>
     <details class="card" open>
-      <summary>【自我介绍】定稿</summary>
+      <summary>自我介绍定稿</summary>
       <p style="padding:12px 0;line-height:1.6;white-space:pre-wrap">${state.introContent ? esc(state.introContent) : '（空）'}</p>
       <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();clearIntro()">清空自我介绍</button>
     </details>
@@ -1292,15 +2764,19 @@ function renderNotebook() {
         </div>`;
     }).join('')}
     <div style="margin-top:16px">
-      <button class="btn" onclick="toast('Demo：模拟导出 Word')">导出 Word</button>
-      <button class="btn btn-primary" onclick="openReview()">复习模式（待练习）</button>
+      <button class="btn" onclick="toast('导出 Word：演示功能')">导出 Word</button>
+      <button class="btn btn-primary" onclick="openReview()">复习待练习题目</button>
     </div>`;
 }
 
 function renderNotebookDetail() {
   const exp = getExpById(state.notebookDetailExpId);
   if (!exp) return `<div class="empty">未找到经历 <button class="btn" onclick="go('notebook')">返回</button></div>`;
+  if (state.notebookQuiz && state.notebookQuiz.expId === exp.id) {
+    return renderNotebookQuiz();
+  }
   const summary = summarizeKnowledgeTags(exp.qaTree);
+  const qaCount = countNodes(exp.qaTree);
 
   return `
     <h1 class="page-title">
@@ -1308,24 +2784,144 @@ function renderNotebookDetail() {
       ${esc(exp.title)}
     </h1>
     <div class="summary-bar">
-      <strong>AI 归纳：本项目主要被问到</strong>
+      <strong>被问到的知识点（标签统计）</strong>
       <div class="chip-row" style="margin-top:10px">
-        ${summary.length ? summary.map(t => {
+        ${summary.length ? summary.map(function (t) {
           const filterKey = t.parts.slice(0, 2).join(' · ');
-          return `<span class="tag clickable" title="跳转知识汇总" onclick="event.stopPropagation();go('knowledge','${esc(filterKey)}')">${esc(t.label)} ×${t.count}</span>`;
-        }).join('') : '<span class="meta">暂无问答，去模拟面试练一轮吧</span>'}
+          return `<span class="tag clickable" title="在知识汇总中筛选" onclick="event.stopPropagation();go('knowledge','${esc(filterKey)}')">${esc(t.label)} ×${t.count}</span>`;
+        }).join('') : '<span class="meta">暂无问答，去文字准备或语音归档练一轮吧</span>'}
       </div>
-      <p class="meta" style="margin-top:8px">点击标签 → 跳转⑤知识汇总并筛选</p>
+      <p class="meta" style="margin-top:8px">想背题？把重点题升格到 <button class="btn btn-sm" onclick="go('knowledge')">知识汇总</button></p>
     </div>
-    <div class="flex-between" style="margin-bottom:12px">
-      <h3 style="font-size:15px">追问树（只读回顾）</h3>
+    <div class="flex-between" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <h3 style="font-size:15px">追问树 · ${qaCount} 题</h3>
       <div>
+        <button class="btn btn-sm" onclick="startNotebookQuiz('${exp.id}')" ${qaCount ? '' : 'disabled'}>🎲 随机提问</button>
+        <button class="btn btn-sm" onclick="openConsolidate('${exp.id}')" ${qaCount >= 2 ? '' : 'disabled'}>✨ AI 归纳相似题</button>
         <button class="btn btn-sm btn-danger" onclick="deleteExperience('${exp.id}','notebook')">删除此经历</button>
-        <button class="btn btn-primary btn-sm" onclick="go('interview','${exp.id}')">从此经历继续模拟</button>
+        <button class="btn btn-primary btn-sm" onclick="go('interview','${exp.id}')">继续文字准备</button>
       </div>
     </div>
-    ${exp.qaTree.length ? renderDetailTree(exp, exp.qaTree, 0) : '<div class="empty">暂无问答记录</div>'}
+    ${exp.qaTree.length ? renderDetailTree(exp, exp.qaTree, 0) : '<div class="empty">暂无问答记录 · 文字准备会自动写入，语音面试可点 📓 归档</div>'}
   `;
+}
+
+function getNotebookQuizPool(expId) {
+  const exp = getExpById(expId);
+  if (!exp) return [];
+  return collectNodes(exp.qaTree).filter(function (n) { return (n.question || '').trim(); });
+}
+
+function startNotebookQuiz(expId) {
+  const pool = getNotebookQuizPool(expId);
+  if (!pool.length) { toast('这道题库里还没有题'); return; }
+  const node = pool[Math.floor(Math.random() * pool.length)];
+  state.notebookQuiz = { expId, node, revealed: false, answer: '' };
+  render();
+}
+
+function renderNotebookQuiz() {
+  const q = state.notebookQuiz;
+  const exp = getExpById(q.expId);
+  const node = q.node;
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="state.notebookQuiz=null;render()">← ${esc(exp ? exp.title : '笔记本')}</button>
+      随机提问
+    </h1>
+    <div class="quiz-card">
+      <div class="chip-row" style="margin-bottom:12px">
+        ${(node.knowledgeTags || node.labels || []).map(function (t) { return `<span class="tag tag-l1">${esc(t)}</span>`; }).join('')}
+        <span class="tag">${esc(node.nodeId)}</span>
+      </div>
+      <p style="font-size:18px;font-weight:600;line-height:1.5;margin-bottom:16px">${esc(node.question)}</p>
+      ${!q.revealed ? `
+        <textarea placeholder="先自己答一遍…" oninput="state.notebookQuiz.answer=this.value">${esc(q.answer)}</textarea>
+        <button class="btn btn-primary" style="margin-top:12px" onclick="state.notebookQuiz.revealed=true;render()">查看笔记本里的回答 / 点评</button>
+      ` : `
+        <div class="card" style="background:#f5f5f5">
+          <strong>我刚才的回答</strong>
+          <p style="margin-top:6px">${esc(q.answer) || '（未填写）'}</p>
+        </div>
+        <div class="card">
+          <strong>笔记本存档</strong>
+          <p style="margin-top:6px">${esc(node.answer) || '（当时未作答）'}</p>
+        </div>
+        ${node.aiFeedback ? `<div class="card"><strong>AI 点评</strong><p style="margin-top:6px">${esc(node.aiFeedback)}</p>${renderScoreBlock(node)}</div>` : ''}
+        <button class="btn" onclick="startNotebookQuiz('${q.expId}')">下一题</button>
+        <button class="btn btn-primary" onclick="openAddKnowledge('${q.expId}','${node.nodeId}')">升格到知识汇总</button>
+      `}
+    </div>`;
+}
+
+async function openConsolidate(expId) {
+  try {
+    showLoading('AI 正在分析相似题…');
+    const data = await api('/api/interview/' + expId + '/consolidate', { method: 'POST', body: '{}' });
+    hideLoading();
+    if (!(data.groups || []).length) {
+      toast(data.summary || '未发现可合并的相似题');
+      return;
+    }
+    state.consolidatePreview = {
+      expId,
+      summary: data.summary || '',
+      groups: (data.groups || []).map(function (g) {
+        return Object.assign({}, g, { selected: true });
+      }),
+    };
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('分析失败：' + e.message);
+    render();
+  }
+}
+
+function renderConsolidateModal() {
+  const p = state.consolidatePreview;
+  if (!p) return '';
+  return `<div class="modal-bg" onclick="state.consolidatePreview=null;render()">
+    <div class="modal" style="max-width:560px" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom:8px">AI 归纳相似题</h3>
+      <p class="meta" style="margin-bottom:12px">${esc(p.summary)}</p>
+      ${(p.groups || []).map(function (g, i) {
+        return `<label class="confirm-skip" style="margin:10px 0;padding:10px;border:1px solid #eee;border-radius:8px;display:block">
+          <input type="checkbox" ${g.selected ? 'checked' : ''} onchange="state.consolidatePreview.groups[${i}].selected=this.checked" />
+          <strong>${esc(g.canonical_question)}</strong>
+          <p class="meta" style="margin-top:4px">合并 ${(g.node_ids || []).join('、')} · ${esc(g.reason || '')}</p>
+        </label>`;
+      }).join('')}
+      <div style="margin-top:12px">
+        <button class="btn btn-primary" onclick="applyConsolidate()">应用选中合并</button>
+        <button class="btn" onclick="state.consolidatePreview=null;render()">取消</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function applyConsolidate() {
+  const p = state.consolidatePreview;
+  if (!p) return;
+  const selected = (p.groups || []).filter(function (g) { return g.selected; });
+  if (!selected.length) { toast('请至少选一组'); return; }
+  try {
+    showLoading('正在合并…');
+    await api('/api/interview/' + p.expId + '/consolidate/apply', {
+      method: 'POST',
+      body: JSON.stringify({ groups: selected }),
+    });
+    const full = await api('/api/experiences/' + p.expId);
+    replaceExp(mapExp(full));
+    state.consolidatePreview = null;
+    hideLoading();
+    toast('已合并 ' + selected.length + ' 组相似题');
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('合并失败：' + e.message);
+    render();
+  }
 }
 
 function renderDetailTree(exp, tree, depth) {
@@ -1336,6 +2932,7 @@ function renderDetailTree(exp, tree, depth) {
         <div><strong>${esc(n.nodeId)}</strong> ${esc(n.question)}</div>
         ${n.answer ? `<div class="meta" style="margin-top:6px">答：${esc(n.answer)}</div>` : ''}
         ${n.aiFeedback ? `<div class="meta" style="margin-top:4px">点评：${esc(n.aiFeedback)}</div>` : ''}
+        ${renderScoreBlock(n)}
         <div class="chip-row">
           ${(n.knowledgeTags || n.labels || []).map(t => `<span class="tag tag-l1">${esc(t)}</span>`).join('')}
           ${n.marks.includes('star') ? '<span class="tag">⭐重点</span>' : ''}
@@ -1438,15 +3035,21 @@ function renderKnowledge() {
   const allTagKeys = [...new Set(state.knowledge.map(k => (k.tags || []).slice(0, 2).join(' · ')).filter(Boolean))];
 
   return `
-    <h1 class="page-title">⑤ 知识汇总</h1>
-    <p class="meta" style="margin-bottom:12px">跨经历的知识点库。可从模拟面试/笔记本加入，也可手动添加。</p>
+    <h1 class="page-title">${renderHubBack('review')}知识汇总</h1>
+    <p class="page-lead">这里放你精选后要背的卡片。完整练习过程仍在面试笔记本里。</p>
+    <div class="tip-box" style="margin-bottom:12px">
+      <strong>怎么用</strong>
+      <p style="margin:8px 0 0;line-height:1.6">
+        从笔记本点「加入知识汇总」就是升格，不是重新录入。适合跨经历随机抽查。
+      </p>
+    </div>
     <div style="margin-bottom:12px">
       <button class="btn btn-primary" onclick="openAddKnowledge(null,null,true)">＋ 手动添加</button>
-      <button class="btn" onclick="startQuiz()">🎲 随机提问</button>
+      <button class="btn" onclick="startQuiz()">随机提问</button>
       ${state.knowledgeFilter ? `<button class="btn" onclick="state.knowledgeFilter=null;render()">清除筛选：${esc(state.knowledgeFilter)}</button>` : ''}
     </div>
     <div class="chip-row" style="margin-bottom:16px">
-      ${allTagKeys.map(t => `<span class="tag clickable ${state.knowledgeFilter===t?'btn-active':''}" onclick="state.knowledgeFilter='${esc(t)}';render()">${esc(t)}</span>`).join('')}
+      ${allTagKeys.map(t => `<span class="tag clickable ${state.knowledgeFilter===t?'tag-on':''}" onclick="state.knowledgeFilter='${esc(t)}';render()">${esc(t)}</span>`).join('')}
     </div>
     ${list.length === 0 ? '<div class="empty">暂无知识条目</div>' : list.map(k => {
       const exp = k.source ? getExpById(k.source.expId) : null;
@@ -1555,7 +3158,7 @@ function renderQuiz() {
     </div>`;
 }
 
-/* ========== ⑥ 真实面经 ========== */
+/* ========== ⑥ 面试经历 ========== */
 const SAMPLE_TRANSCRIPT = `面试官：请先做一下自我介绍。
 候选人：我是 CHEN，之前在 XX 公司做产品实习，负责增长相关的数据分析。
 
@@ -1582,21 +3185,23 @@ function debriefTranscriptTip(openByDefault) {
 function renderDebrief() {
   if (state.debriefForm) return renderDebriefForm();
   return `
-    <h1 class="page-title">⑥ 真实面经汇总</h1>
-    <p class="meta" style="margin-bottom:12px">粘贴面试录音转写文本 → 提取关键问答入库 → AI 分析弱答（标红）并给优化答法</p>
+    <h1 class="page-title">${renderHubBack('review')}面试经历</h1>
+    <p class="page-lead">粘贴真实面试转写，自动提取问答，标出弱答，并给出准确性、深度、逻辑、表达四维评分。</p>
     ${debriefTranscriptTip(!(state.debriefs || []).length)}
-    <button class="btn btn-primary" onclick="openDebriefForm()">＋ 录入面经转写</button>
-    ${!(state.debriefs || []).length ? '<div class="empty">暂无面经，先录入一段转写文本</div>' : ''}
+    <button class="btn btn-primary" onclick="openDebriefForm()">＋ 录入面试转写</button>
+    ${!(state.debriefs || []).length ? '<div class="empty">还没有面试经历，先录入一段转写文本</div>' : ''}
     ${(state.debriefs || []).map(d => {
       const items = d.items || [];
       const weak = items.filter(i => i.quality === 'weak').length;
       const analyzed = items.filter(i => i.quality === 'good' || i.quality === 'weak').length;
+      const scoreSum = debriefScoreSummary(items);
       return `
         <div class="list-row" onclick="go('debrief-detail','${d.id}')">
           <div>
-            <strong>${esc(d.title || '未命名面经')}</strong>
+            <strong>${esc(d.title || '未命名面试经历')}</strong>
+            ${scoreSum ? `<span class="badge">${scoreSum.avg}/100 均分</span>` : ''}
             <div class="meta" style="margin-top:4px">${esc(d.company || '')} ${esc(d.role || '')} ${esc(d.interview_date || '')}</div>
-            <div class="meta">${items.length} 条问答 · 已分析 ${analyzed} · 弱答 ${weak}</div>
+            <div class="meta">${items.length} 条问答 · 已分析 ${analyzed} · 弱答 ${weak}${scoreSum ? ' · 已评分 ' + scoreSum.count : ''}</div>
           </div>
           <div class="row-actions" onclick="event.stopPropagation()">
             <button class="btn btn-sm btn-danger" onclick="deleteDebrief('${d.id}')">删除</button>
@@ -1616,7 +3221,7 @@ function renderDebriefForm() {
   return `
     <h1 class="page-title">
       <button class="btn btn-ghost btn-sm" onclick="state.debriefForm=null;render()">← 返回</button>
-      录入面经转写
+      录入面试转写
     </h1>
     ${debriefTranscriptTip(true)}
     <div class="card">
@@ -1678,20 +3283,30 @@ function replaceDebrief(d) {
 
 function renderDebriefDetail() {
   const d = getDebrief();
-  if (!d) return `<div class="empty">未找到面经 <button class="btn" onclick="go('debrief')">返回</button></div>`;
+  if (!d) return `<div class="empty">未找到面试经历 <button class="btn" onclick="go('debrief')">返回</button></div>`;
   const items = d.items || [];
   const weakN = items.filter(i => i.quality === 'weak').length;
+  const scoreSum = debriefScoreSummary(items);
   return `
     <h1 class="page-title">
-      <button class="btn btn-ghost btn-sm" onclick="go('debrief')">← 面经列表</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('debrief')">← 面试经历列表</button>
       ${esc(d.title)}
     </h1>
     <div class="summary-bar">
       <div class="meta">${esc(d.company)} · ${esc(d.role)} · ${esc(d.interview_date)}</div>
+      ${scoreSum ? `
+        <div style="margin-top:10px">
+          <strong>量化评分</strong>
+          <span class="meta" style="margin-left:8px">${scoreSum.count}/${scoreSum.total} 条已评 · 均分 ${scoreSum.avg}/100</span>
+          <div class="score-row" style="margin-top:8px">
+            <span class="score-num">${scoreSum.avg}</span><span class="meta">/100 本场均分</span>
+            <div class="score-bar"><i style="width:${Math.max(0, Math.min(100, scoreSum.avg))}%"></i></div>
+          </div>
+        </div>` : '<p class="meta" style="margin-top:8px">分析后将显示四维评分与综合分</p>'}
       <div style="margin-top:8px">
         <button class="btn btn-sm" onclick="extractDebrief('${d.id}')">重新提取问答</button>
-        <button class="btn btn-primary btn-sm" onclick="analyzeDebrief('${d.id}')">AI 分析全部问答</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteDebrief('${d.id}')">删除整场面经</button>
+        <button class="btn btn-primary btn-sm" onclick="analyzeDebrief('${d.id}')">AI 分析并评分</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteDebrief('${d.id}')">删除整场面试经历</button>
         <span class="meta" style="margin-left:8px">${items.length} 条 · 弱答 ${weakN}（标红）</span>
       </div>
     </div>
@@ -1706,16 +3321,18 @@ function renderDebriefDetail() {
       return `
         <div class="card ${qclass}">
           <div class="flex-between">
-            <div>${qlabel}</div>
+            <div>${qlabel}${renderDebriefScoreBadge(it)}</div>
             <div>
-              <button class="btn btn-sm" onclick="analyzeDebrief('${d.id}','${it.id}')">分析本条</button>
+              <button class="btn btn-sm" onclick="analyzeDebrief('${d.id}','${it.id}')">分析并评分</button>
               <button class="btn btn-sm btn-danger" onclick="deleteDebriefItem('${d.id}','${it.id}')">删除本条</button>
             </div>
           </div>
           <p style="margin:10px 0 6px"><strong>问：</strong>${esc(it.question)}</p>
           <p style="margin-bottom:8px"><strong>答：</strong>${esc(it.answer)}</p>
           ${(it.tags || []).map(t => `<span class="tag tag-l1">${esc(t)}</span>`).join('')}
-          ${it.analysis ? `<div class="feedback" style="margin-top:10px"><strong>AI 分析</strong><p style="margin-top:6px">${esc(it.analysis)}</p></div>` : ''}
+          ${debriefItemScore(it) != null ? `<div class="feedback" style="margin-top:10px"><strong>量化评分</strong>${renderScoreBlock(it)}</div>` : ''}
+          ${it.analysis ? `<div class="feedback" style="margin-top:10px"><strong>AI 分析</strong>
+            <p style="margin-top:6px">${esc(it.analysis)}</p></div>` : ''}
           ${it.optimized_answer && it.quality === 'weak' ? `
             <div class="card" style="margin-top:8px;background:#fff;border-style:dashed">
               <strong>优化回答建议</strong>
@@ -1728,11 +3345,11 @@ function renderDebriefDetail() {
 
 async function deleteDebrief(id) {
   const d = (state.debriefs || []).find(function (x) { return x.id === id; });
-  if (!d) { toast('面经不存在'); return; }
+  if (!d) { toast('面试经历不存在'); return; }
   const ok = await confirmDelete({
     scope: 'debrief',
-    title: '删除这场面经？',
-    body: '将删除「' + (d.title || '未命名面经') + '」及其中全部问答，无法恢复。',
+    title: '删除这场面试经历？',
+    body: '将删除「' + (d.title || '未命名面试经历') + '」及其中全部问答，无法恢复。',
     dangerLabel: '确认删除',
   });
   if (!ok) return;
@@ -1743,7 +3360,7 @@ async function deleteDebrief(id) {
       state.debriefDetailId = null;
       state.page = 'debrief';
     }
-    toast('面经已删除');
+    toast('面试经历已删除');
     render();
   } catch (e) {
     toast('删除失败：' + e.message);
@@ -1757,7 +3374,7 @@ async function deleteDebriefItem(debriefId, itemId) {
   const ok = await confirmDelete({
     scope: 'debrief_item',
     title: '删除这条问答？',
-    body: '将删除问：「' + (it.question || '').slice(0, 40) + '」，整场面经仍保留。',
+    body: '将删除问：「' + (it.question || '').slice(0, 40) + '」，整场面试经历仍保留。',
     dangerLabel: '确认删除',
   });
   if (!ok) return;
@@ -1788,7 +3405,7 @@ async function extractDebrief(id) {
 
 async function analyzeDebrief(id, itemId) {
   try {
-    showLoading(itemId ? 'AI 正在分析本条回答…' : 'AI 正在逐条分析面经，请稍候…');
+    showLoading(itemId ? 'AI 正在分析本条回答…' : 'AI 正在逐条分析面试经历，请稍候…');
     const body = itemId ? { item_id: itemId } : {};
     const d = await api('/api/debriefs/' + id + '/analyze', { method: 'POST', body: JSON.stringify(body) });
     replaceDebrief(d);
@@ -1815,7 +3432,7 @@ async function addWeakToKnowledge(debriefId, itemId) {
         my_answer: it.answer || '',
         reference_answer: it.optimized_answer || '',
         tags: it.tags || ['行为面试'],
-        note: '来自真实面经：' + (d.title || debriefId),
+        note: '来自面试经历：' + (d.title || debriefId),
         status: '待巩固',
       }),
     });
@@ -1843,8 +3460,8 @@ function renderMe() {
     </div>`;
   }).join('');
   return `
-    <h1 class="page-title">⑧ 我的</h1>
-    <p class="meta" style="margin-bottom:12px">当前没有登录系统，这里是<strong>本机资料卡</strong>：改名字只存在你这台电脑的浏览器里，数据仍是这份 SQLite 里的共用库。</p>
+    <h1 class="page-title">我的</h1>
+    <p class="page-lead">当前没有账号登录。这里是本机资料卡：称呼只保存在这台电脑的浏览器里；练习数据仍在本地数据库中。</p>
     <div class="card">
       <div class="form-grid">
         <div class="form-row">
@@ -1865,7 +3482,7 @@ function renderMe() {
     <div class="summary-bar">
       <strong>本机数据概览</strong>
       <p class="meta" style="margin-top:8px">
-        经历 ${state.experiences.length} 段 · 追问节点 ${qaCount} · 知识 ${state.knowledge.length} 条 · 面经 ${(state.debriefs || []).length} 场
+        经历 ${state.experiences.length} 段 · 追问节点 ${qaCount} · 知识 ${state.knowledge.length} 条 · 面试经历 ${(state.debriefs || []).length} 场
       </p>
       <p class="meta" style="margin-top:4px">后端 LLM：${esc(state.llmEffective || (state.apiOnline ? '未知' : '未连接'))}</p>
     </div>
@@ -1891,12 +3508,12 @@ function saveMeForm() {
 /* ========== ⑦ 岗位定制 ========== */
 function renderJob() {
   return `
-    <h1 class="page-title">⑦ 岗位定制</h1>
-    <p class="meta" style="margin-bottom:12px">粘贴 JD → 对照经历库做匹配度与补短板（走后端 LLM，侧边栏显示当前是 mock 还是 openai）</p>
+    <h1 class="page-title">岗位匹配</h1>
+    <p class="page-lead">粘贴目标岗位说明，对照经历库分析匹配度与待补短板。</p>
     <div class="card">
       <div class="form-row">
-        <label>目标岗位 JD</label>
-        <textarea id="jd-text" style="min-height:140px" placeholder="粘贴岗位描述…">${esc(state.jdText)}</textarea>
+        <label>目标岗位说明</label>
+        <textarea id="jd-text" style="min-height:140px" placeholder="粘贴岗位职责、任职要求…">${esc(state.jdText)}</textarea>
       </div>
       <button class="btn btn-primary" onclick="analyzeJD()">分析匹配度</button>
     </div>

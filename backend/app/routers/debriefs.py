@@ -147,6 +147,9 @@ async def analyze_qa(debrief_id: str, body: DebriefAnalyzeIn = DebriefAnalyzeIn(
                 "analysis": result.get("analysis") or "",
                 "optimized_answer": result.get("optimized_answer") or "",
                 "tags": result.get("tags") or it.get("tags") or [],
+                "score": result.get("score"),
+                "scoreDims": result.get("scoreDims") or {},
+                "scoreHints": result.get("scoreHints") or [],
             }
         )
     row.items = updated

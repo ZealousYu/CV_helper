@@ -20,6 +20,7 @@ from app.schemas import (
 )
 from app.services.llm import get_llm
 from app.services.resume_text import extract_text
+from app.tag_utils import normalize_exp_tags
 
 router = APIRouter(prefix="/api/experiences", tags=["experiences"])
 
@@ -60,7 +61,7 @@ def _create_row(body: ExperienceCreate, db: Session) -> Experience:
         extra=body.extra,
         title=_make_title(body.company, body.role, body.title),
     )
-    row.tags = body.tags
+    row.tags = normalize_exp_tags(body.tags or [])
     row.qa_tree = []
     db.add(row)
     db.commit()
@@ -148,13 +149,24 @@ def update_experience(exp_id: str, body: ExperienceUpdate, db: Session = Depends
     for k, v in data.items():
         setattr(row, k, v)
     if tags is not None:
-        row.tags = tags
+        row.tags = normalize_exp_tags(tags)
     if "company" in data or "role" in data or "title" in data:
         if not data.get("title"):
             row.title = _make_title(row.company, row.role, None)
     db.commit()
     db.refresh(row)
     return _to_out(row)
+
+
+@router.post("/normalize-tags", response_model=List[ExperienceOut])
+def normalize_all_tags(db: Session = Depends(get_db)):
+    """将库里所有经历的标签归并到主题（数据分析 / 产品 / …）。"""
+    rows = db.query(Experience).all()
+    for row in rows:
+        row.tags = normalize_exp_tags(row.tags or [])
+    db.commit()
+    rows = db.query(Experience).order_by(Experience.created_at.desc()).all()
+    return [_to_out(r) for r in rows]
 
 
 @router.delete("/{exp_id}")

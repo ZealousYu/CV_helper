@@ -2,15 +2,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.access_gate import (
+    AccessPasswordMiddleware,
+    access_enabled,
+    set_access_cookie,
+    try_unlock,
+    unlock_page,
+)
 from app.config import settings, _ENV_FILE as _ENV_HINT
 from app.database import Base, SessionLocal, engine
-from app.models import Experience, KnowledgeItem, Debrief
-from app.routers import experiences, interview, knowledge, debriefs, job
+from app.models import Experience, KnowledgeItem, Debrief, InterviewSession
+from app.routers import experiences, interview, knowledge, debriefs, job, sessions, intro, voice
 
 app = FastAPI(title="CV Helper API", version="0.1.0")
 
@@ -23,12 +30,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(AccessPasswordMiddleware)
 
 app.include_router(experiences.router)
 app.include_router(interview.router)
+app.include_router(sessions.router)
 app.include_router(knowledge.router)
 app.include_router(debriefs.router)
 app.include_router(job.router)
+app.include_router(intro.router)
+app.include_router(voice.router)
 
 # 前端 Demo：同端口访问，避免 file:// 跨域麻烦
 _DEMO_DIR = Path(__file__).resolve().parents[2] / "demo"
@@ -43,8 +54,41 @@ def root():
     return {"message": "CV Helper API", "docs": "/docs"}
 
 
+@app.get("/unlock")
+def unlock_get(next: str = "/"):
+    if not access_enabled():
+        return RedirectResponse(url=next or "/")
+    return unlock_page(next_url=next or "/", error=False)
+
+
+@app.post("/unlock")
+async def unlock_post(
+    request: Request,
+    password: str = Form(""),
+    next: str = Form("/"),
+):
+    if not access_enabled():
+        return RedirectResponse(url=next or "/", status_code=303)
+    token = try_unlock(password)
+    if not token:
+        return unlock_page(next_url=next or "/", error=True)
+    target = next or "/"
+    if not target.startswith("/"):
+        target = "/"
+    resp = RedirectResponse(url=target, status_code=303)
+    secure = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    set_access_cookie(resp, token, secure=secure)
+    return resp
+
+
 @app.on_event("startup")
 def on_startup():
+    # 确保持久化目录存在（Docker /data）
+    db_url = settings.database_url or ""
+    if db_url.startswith("sqlite:///"):
+        db_path = Path(db_url[len("sqlite:///"):])
+        if db_path.parent and str(db_path.parent) not in ("", "."):
+            db_path.parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
     _seed_if_empty()
 
@@ -90,12 +134,21 @@ def _seed_if_empty():
 
 @app.get("/api/health")
 def health():
+    from app.services.doubao_tts import is_doubao_tts_configured
+
     effective = "openai" if (settings.llm_provider == "openai" and settings.llm_api_key) else "mock"
+    tts_configured = is_doubao_tts_configured()
+    tts_provider = settings.tts_provider or "auto"
+    tts_effective = "doubao" if tts_configured and tts_provider != "browser" else "browser"
     return {
         "ok": True,
         "llm_provider": settings.llm_provider,
         "llm_key_set": bool(settings.llm_api_key),
         "llm_effective": effective,
         "llm_model": settings.llm_model if effective == "openai" else None,
+        "tts_provider": tts_provider,
+        "tts_effective": tts_effective,
+        "tts_doubao_configured": tts_configured,
+        "access_password_enabled": bool((settings.access_password or "").strip()),
         "env_file": str(_ENV_HINT),
     }

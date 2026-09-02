@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 
@@ -121,9 +122,61 @@ def empty_node(node_id: str, question: str, **kwargs: Any) -> Dict[str, Any]:
         "answerMode": None,
         "answer": None,
         "aiFeedback": None,
+        "score": None,
+        "scoreDims": {},
+        "scoreHints": [],
         "labels": kwargs.get("labels", []),
         "knowledgeTags": kwargs.get("knowledgeTags", []),
         "marks": [],
         "triggerFrom": kwargs.get("triggerFrom"),
+        "targetExpId": kwargs.get("targetExpId"),
+        "targetExpTitle": kwargs.get("targetExpTitle"),
+        "archivedToExpId": kwargs.get("archivedToExpId"),
+        "archivedToNodeId": kwargs.get("archivedToNodeId"),
         "children": [],
     }
+
+
+def collect_flat_nodes(tree: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+
+    def walk(nodes: List[Dict[str, Any]]) -> None:
+        for n in nodes or []:
+            out.append(n)
+            walk(n.get("children") or [])
+
+    walk(tree)
+    return out
+
+
+def normalize_question_text(question: str) -> str:
+    return re.sub(r"\s+", "", (question or "").strip().lower())
+
+
+def find_duplicate_question(tree: List[Dict[str, Any]], question: str) -> Optional[Dict[str, Any]]:
+    target = normalize_question_text(question)
+    if not target:
+        return None
+    for n in collect_flat_nodes(tree):
+        if normalize_question_text(n.get("question") or "") == target:
+            return n
+    return None
+
+
+def clone_subtree_with_new_ids(
+    node: Dict[str, Any],
+    parent_id: Optional[str],
+    siblings: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """深拷贝子树并重分配 nodeId（用于语音会话归档到经历笔记本）。"""
+    new_id = generate_node_id(parent_id, siblings)
+    skip_keys = {"children", "archivedToExpId", "archivedToNodeId"}
+    new_node: Dict[str, Any] = {k: v for k, v in node.items() if k not in skip_keys}
+    new_node["nodeId"] = new_id
+    new_node["children"] = []
+    child_siblings: List[Dict[str, Any]] = []
+    for child in node.get("children") or []:
+        child_copy = clone_subtree_with_new_ids(child, new_id, child_siblings)
+        child_siblings.append(child_copy)
+        new_node["children"].append(child_copy)
+    return new_node

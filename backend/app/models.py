@@ -94,3 +94,34 @@ class Debrief(Base):
     @items.setter
     def items(self, value: List[Any]) -> None:
         self.items_json = json.dumps(value, ensure_ascii=False)
+
+
+class InterviewSession(Base):
+    """投递式模拟面试：勾选多段经历 + 岗位/JD，会话自带追问树。"""
+
+    __tablename__ = "interview_sessions"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    target_role: Mapped[str] = mapped_column(String(256), default="")
+    jd_text: Mapped[str] = mapped_column(Text, default="")
+    exp_ids_json: Mapped[str] = mapped_column(Text, default="[]")
+    qa_tree_json: Mapped[str] = mapped_column(Text, default="[]")
+    channel: Mapped[str] = mapped_column(String(32), default="text")  # text | voice
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
+
+    @property
+    def exp_ids(self) -> List[str]:
+        return json.loads(self.exp_ids_json or "[]")
+
+    @exp_ids.setter
+    def exp_ids(self, value: List[str]) -> None:
+        self.exp_ids_json = json.dumps(value, ensure_ascii=False)
+
+    @property
+    def qa_tree(self) -> List[Any]:
+        return json.loads(self.qa_tree_json or "[]")
+
+    @qa_tree.setter
+    def qa_tree(self, value: List[Any]) -> None:
+        self.qa_tree_json = json.dumps(value, ensure_ascii=False)

@@ -69,6 +69,9 @@ class AnswerOut(BaseModel):
     qa_tree: List[Dict[str, Any]]
     ai_feedback: str
     knowledge_tags: List[str]
+    score: Optional[int] = None
+    score_dims: Optional[Dict[str, int]] = None
+    score_hints: List[str] = Field(default_factory=list)
 
 
 class NextIn(BaseModel):
@@ -226,3 +229,108 @@ class ResumeImportIn(BaseModel):
 class ResumeImportOut(BaseModel):
     created: List[ExperienceOut]
     count: int
+
+
+class SessionCreateIn(BaseModel):
+    exp_ids: List[str] = Field(default_factory=list)
+    target_role: str = ""
+    jd_text: str = ""
+    channel: Literal["text", "voice"] = "text"
+
+
+class SessionOut(BaseModel):
+    id: str
+    target_role: str
+    jd_text: str
+    exp_ids: List[str]
+    channel: str
+    qa_tree: List[Dict[str, Any]]
+    active_node_id: Optional[str] = None
+    question: Optional[str] = None
+    phase: str = "idle"
+    node: Optional[Dict[str, Any]] = None
+    covered_exp_ids: List[str] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+
+class SessionAnswerIn(BaseModel):
+    node_id: str
+    answer: str
+    answer_mode: Literal["user_answered", "ai_generated", "framework_only"] = "user_answered"
+
+
+class SessionNextIn(BaseModel):
+    from_node_id: str
+    action: Literal["deep_dive", "new_angle", "diverge", "cover_next", "end"] = "cover_next"
+
+
+class SessionArchiveIn(BaseModel):
+    node_id: str
+
+
+class SessionArchiveOut(BaseModel):
+    exp_id: str
+    exp_node_id: str
+    already_existed: bool = False
+    message: str = ""
+    experience: ExperienceOut
+    session: SessionOut
+
+
+class ConsolidateGroup(BaseModel):
+    id: str
+    node_ids: List[str]
+    canonical_question: str
+    merged_answer: str = ""
+    reason: str = ""
+
+
+class ConsolidateOut(BaseModel):
+    summary: str
+    groups: List[ConsolidateGroup] = Field(default_factory=list)
+
+
+class ConsolidateApplyIn(BaseModel):
+    groups: List[ConsolidateGroup]
+
+
+class IntroExperienceBrief(BaseModel):
+    title: str = ""
+    role: str = ""
+    summary: str = ""
+    metrics: str = ""
+
+
+class IntroIn(BaseModel):
+    mode: Literal["generate", "polish", "guide"]
+    content: str = ""
+    target_role: str = ""
+    guide_answers: List[str] = Field(default_factory=list)
+    experiences: List[IntroExperienceBrief] = Field(default_factory=list)
+
+
+class IntroOut(BaseModel):
+    content: str
+    hint: str = ""
+
+
+class TtsVoicePack(BaseModel):
+    id: str
+    name: str
+    gender: str = ""
+    style: str = ""
+    resource_id: str = "seed-tts-2.0"
+
+
+class TtsIn(BaseModel):
+    text: str
+    speaker: Optional[str] = None  # 语音包 id；空则用默认
+
+
+class TtsStatusOut(BaseModel):
+    provider: str
+    effective: str
+    doubao_configured: bool = False
+    speaker: str = ""
+    voices: List[TtsVoicePack] = Field(default_factory=list)

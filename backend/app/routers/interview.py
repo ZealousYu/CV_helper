@@ -8,6 +8,8 @@ from app.models import Experience
 from app.schemas import (
     AnswerIn,
     AnswerOut,
+    ConsolidateApplyIn,
+    ConsolidateOut,
     DraftIn,
     DraftOut,
     InterviewStartOut,
@@ -21,6 +23,7 @@ from app.services.llm import get_llm
 from app.tree_utils import (
     add_child,
     add_root,
+    collect_flat_nodes,
     delete_node,
     empty_node,
     find_node,
@@ -101,6 +104,9 @@ async def submit_answer(exp_id: str, body: AnswerIn, db: Session = Depends(get_d
         "aiFeedback": result.get("aiFeedback") or "",
         "knowledgeTags": result.get("knowledgeTags") or [],
         "labels": result.get("labels") or [],
+        "score": result.get("score"),
+        "scoreDims": result.get("scoreDims") or {},
+        "scoreHints": result.get("scoreHints") or [],
     }
     tree = update_node(tree, body.node_id, patch)
     row.qa_tree = tree
@@ -112,6 +118,9 @@ async def submit_answer(exp_id: str, body: AnswerIn, db: Session = Depends(get_d
         qa_tree=row.qa_tree,
         ai_feedback=patch["aiFeedback"],
         knowledge_tags=patch["knowledgeTags"],
+        score=patch.get("score"),
+        score_dims=patch.get("scoreDims") or {},
+        score_hints=patch.get("scoreHints") or [],
     )
 
 
@@ -222,3 +231,74 @@ def remove_node(exp_id: str, node_id: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(row)
     return {"ok": True, "deleted_node_id": node_id, "qa_tree": row.qa_tree}
+
+
+@router.post("/{exp_id}/consolidate", response_model=ConsolidateOut)
+async def preview_consolidate(exp_id: str, db: Session = Depends(get_db)):
+    """AI 分析笔记本中相似问题，返回可合并分组（预览，不修改树）。"""
+    row = _get_exp(db, exp_id)
+    nodes = collect_flat_nodes(row.qa_tree)
+    if len(nodes) < 2:
+        return ConsolidateOut(summary="节点太少，无需归纳", groups=[])
+    payload = [
+        {
+            "nodeId": n.get("nodeId"),
+            "question": n.get("question") or "",
+            "answer": n.get("answer") or "",
+        }
+        for n in nodes
+        if n.get("nodeId")
+    ]
+    llm = get_llm()
+    result = await llm.consolidate_qa_nodes(_exp_dict(row), payload)
+    return ConsolidateOut(
+        summary=result.get("summary") or "",
+        groups=result.get("groups") or [],
+    )
+
+
+@router.post("/{exp_id}/consolidate/apply", response_model=InterviewStartOut)
+async def apply_consolidate(exp_id: str, body: ConsolidateApplyIn, db: Session = Depends(get_db)):
+    """按 AI 归纳结果合并相似题（保留每组第一题，删除其余）。"""
+    row = _get_exp(db, exp_id)
+    tree = row.qa_tree
+    for g in body.groups:
+        ids = [x for x in (g.node_ids or []) if x]
+        if len(ids) < 2:
+            continue
+        keep_id = ids[0]
+        keeper = find_node(tree, keep_id)
+        if not keeper:
+            continue
+        merged_answer = (g.merged_answer or "").strip() or keeper.get("answer") or ""
+        tree = update_node(
+            tree,
+            keep_id,
+            {
+                "question": (g.canonical_question or "").strip() or keeper.get("question"),
+                "answer": merged_answer,
+            },
+        )
+        for rid in ids[1:]:
+            tree, _ = delete_node(tree, rid)
+    row.qa_tree = tree
+    db.commit()
+    db.refresh(row)
+    active = tree[0] if tree else None
+    if not active:
+        return InterviewStartOut(
+            exp_id=row.id,
+            active_node_id="",
+            question="",
+            phase="idle",
+            node={},
+            qa_tree=[],
+        )
+    return InterviewStartOut(
+        exp_id=row.id,
+        active_node_id=active["nodeId"],
+        question=active.get("question") or "",
+        phase="feedback" if active.get("answer") else "question",
+        node=active,
+        qa_tree=row.qa_tree,
+    )

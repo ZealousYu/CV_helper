@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Experience
+from app.deps import get_current_user, get_owned
+from app.models import Experience, User
 from app.schemas import (
     AnswerIn,
     AnswerOut,
@@ -49,16 +50,13 @@ def _exp_dict(row: Experience) -> dict:
     }
 
 
-def _get_exp(db: Session, exp_id: str) -> Experience:
-    row = db.get(Experience, exp_id)
-    if not row:
-        raise HTTPException(404, "经历不存在")
-    return row
+def _get_exp(db: Session, exp_id: str, user: User) -> Experience:
+    return get_owned(db, Experience, exp_id, user, not_found="经历不存在")
 
 
 @router.post("/{exp_id}/start", response_model=InterviewStartOut)
-async def start_interview(exp_id: str, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+async def start_interview(exp_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     tree = row.qa_tree
     llm = get_llm()
 
@@ -89,8 +87,8 @@ async def start_interview(exp_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{exp_id}/answer", response_model=AnswerOut)
-async def submit_answer(exp_id: str, body: AnswerIn, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+async def submit_answer(exp_id: str, body: AnswerIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     tree = row.qa_tree
     node = find_node(tree, body.node_id)
     if not node:
@@ -125,8 +123,8 @@ async def submit_answer(exp_id: str, body: AnswerIn, db: Session = Depends(get_d
 
 
 @router.post("/{exp_id}/next", response_model=NextOut)
-async def next_step(exp_id: str, body: NextIn, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+async def next_step(exp_id: str, body: NextIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     tree = row.qa_tree
 
     if body.action == "end":
@@ -175,8 +173,8 @@ async def next_step(exp_id: str, body: NextIn, db: Session = Depends(get_db)):
 
 
 @router.post("/{exp_id}/draft", response_model=DraftOut)
-async def draft_answer(exp_id: str, body: DraftIn, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+async def draft_answer(exp_id: str, body: DraftIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     node = find_node(row.qa_tree, body.node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
@@ -186,8 +184,8 @@ async def draft_answer(exp_id: str, body: DraftIn, db: Session = Depends(get_db)
 
 
 @router.post("/{exp_id}/review", response_model=ReviewOut)
-async def review_answer(exp_id: str, body: ReviewIn, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+async def review_answer(exp_id: str, body: ReviewIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     node = find_node(row.qa_tree, body.node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
@@ -208,8 +206,8 @@ async def review_answer(exp_id: str, body: ReviewIn, db: Session = Depends(get_d
 
 
 @router.patch("/{exp_id}/nodes/{node_id}/marks")
-def update_marks(exp_id: str, node_id: str, body: MarksIn, db: Session = Depends(get_db)):
-    row = _get_exp(db, exp_id)
+def update_marks(exp_id: str, node_id: str, body: MarksIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_exp(db, exp_id, user)
     node = find_node(row.qa_tree, node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
@@ -221,9 +219,9 @@ def update_marks(exp_id: str, node_id: str, body: MarksIn, db: Session = Depends
 
 
 @router.delete("/{exp_id}/nodes/{node_id}")
-def remove_node(exp_id: str, node_id: str, db: Session = Depends(get_db)):
+def remove_node(exp_id: str, node_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """删除追问树节点（含子树）。"""
-    row = _get_exp(db, exp_id)
+    row = _get_exp(db, exp_id, user)
     tree, removed = delete_node(row.qa_tree, node_id)
     if not removed:
         raise HTTPException(404, "节点不存在")
@@ -234,9 +232,9 @@ def remove_node(exp_id: str, node_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{exp_id}/consolidate", response_model=ConsolidateOut)
-async def preview_consolidate(exp_id: str, db: Session = Depends(get_db)):
+async def preview_consolidate(exp_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """AI 分析笔记本中相似问题，返回可合并分组（预览，不修改树）。"""
-    row = _get_exp(db, exp_id)
+    row = _get_exp(db, exp_id, user)
     nodes = collect_flat_nodes(row.qa_tree)
     if len(nodes) < 2:
         return ConsolidateOut(summary="节点太少，无需归纳", groups=[])
@@ -258,9 +256,9 @@ async def preview_consolidate(exp_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{exp_id}/consolidate/apply", response_model=InterviewStartOut)
-async def apply_consolidate(exp_id: str, body: ConsolidateApplyIn, db: Session = Depends(get_db)):
+async def apply_consolidate(exp_id: str, body: ConsolidateApplyIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """按 AI 归纳结果合并相似题（保留每组第一题，删除其余）。"""
-    row = _get_exp(db, exp_id)
+    row = _get_exp(db, exp_id, user)
     tree = row.qa_tree
     for g in body.groups:
         ids = [x for x in (g.node_ids or []) if x]

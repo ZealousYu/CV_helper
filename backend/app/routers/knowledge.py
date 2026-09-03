@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Experience, KnowledgeItem
+from app.deps import get_current_user, get_owned
+from app.models import Experience, KnowledgeItem, User
 from app.schemas import KnowledgeCreate, KnowledgeOut, KnowledgeUpdate
 from app.tree_utils import find_node
 
@@ -31,8 +32,17 @@ def _to_out(row: KnowledgeItem) -> KnowledgeOut:
 
 
 @router.get("", response_model=List[KnowledgeOut])
-def list_knowledge(tag: Optional[str] = Query(None), db: Session = Depends(get_db)):
-    rows = db.query(KnowledgeItem).order_by(KnowledgeItem.created_at.desc()).all()
+def list_knowledge(
+    tag: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    rows = (
+        db.query(KnowledgeItem)
+        .filter(KnowledgeItem.user_id == user.id)
+        .order_by(KnowledgeItem.created_at.desc())
+        .all()
+    )
     out = [_to_out(r) for r in rows]
     if tag:
         out = [k for k in out if any(tag in t or t in tag for t in k.tags)]
@@ -40,13 +50,20 @@ def list_knowledge(tag: Optional[str] = Query(None), db: Session = Depends(get_d
 
 
 @router.post("", response_model=KnowledgeOut)
-def create_knowledge(body: KnowledgeCreate, db: Session = Depends(get_db)):
-    # 若带来源节点且字段为空，尝试从树上补全
+def create_knowledge(
+    body: KnowledgeCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     question = body.question
     my_answer = body.my_answer
     tags = body.tags
     if body.source_exp_id and body.source_node_id:
-        exp = db.get(Experience, body.source_exp_id)
+        exp = (
+            db.query(Experience)
+            .filter(Experience.id == body.source_exp_id, Experience.user_id == user.id)
+            .first()
+        )
         if exp:
             node = find_node(exp.qa_tree, body.source_node_id)
             if node:
@@ -62,6 +79,7 @@ def create_knowledge(body: KnowledgeCreate, db: Session = Depends(get_db)):
 
     row = KnowledgeItem(
         id=f"k_{uuid.uuid4().hex[:10]}",
+        user_id=user.id,
         source_exp_id=body.source_exp_id,
         source_node_id=body.source_node_id,
         question=question,
@@ -78,10 +96,13 @@ def create_knowledge(body: KnowledgeCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{kid}", response_model=KnowledgeOut)
-def update_knowledge(kid: str, body: KnowledgeUpdate, db: Session = Depends(get_db)):
-    row = db.get(KnowledgeItem, kid)
-    if not row:
-        raise HTTPException(404, "知识条目不存在")
+def update_knowledge(
+    kid: str,
+    body: KnowledgeUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, KnowledgeItem, kid, user, not_found="知识条目不存在")
     data = body.model_dump(exclude_unset=True)
     tags = data.pop("tags", None)
     for k, v in data.items():
@@ -94,10 +115,12 @@ def update_knowledge(kid: str, body: KnowledgeUpdate, db: Session = Depends(get_
 
 
 @router.delete("/{kid}")
-def delete_knowledge(kid: str, db: Session = Depends(get_db)):
-    row = db.get(KnowledgeItem, kid)
-    if not row:
-        raise HTTPException(404, "知识条目不存在")
+def delete_knowledge(
+    kid: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, KnowledgeItem, kid, user, not_found="知识条目不存在")
     db.delete(row)
     db.commit()
     return {"ok": True}

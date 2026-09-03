@@ -315,6 +315,21 @@ class IntroOut(BaseModel):
     hint: str = ""
 
 
+class SuggestExpTagsIn(BaseModel):
+    type: str = "实习"
+    company: str = ""
+    role: str = ""
+    period: str = ""
+    summary: str = ""
+    metrics: str = ""
+    extra: str = ""
+
+
+class SuggestExpTagsOut(BaseModel):
+    tags: List[str]
+    llm_effective: str = "mock"
+
+
 class TtsVoicePack(BaseModel):
     id: str
     name: str

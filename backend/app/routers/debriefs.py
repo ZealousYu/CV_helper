@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Debrief
+from app.deps import get_current_user, get_owned
+from app.models import Debrief, User
 from app.schemas import DebriefAnalyzeIn, DebriefCreate, DebriefOut, DebriefUpdate
 from app.services.llm import get_llm
 
@@ -40,17 +41,30 @@ def _auto_title(body: DebriefCreate) -> str:
 
 
 @router.get("", response_model=List[DebriefOut])
-def list_debriefs(db: Session = Depends(get_db)):
-    rows = db.query(Debrief).order_by(Debrief.created_at.desc()).all()
+def list_debriefs(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    rows = (
+        db.query(Debrief)
+        .filter(Debrief.user_id == user.id)
+        .order_by(Debrief.created_at.desc())
+        .all()
+    )
     return [_to_out(r) for r in rows]
 
 
 @router.post("", response_model=DebriefOut)
-def create_debrief(body: DebriefCreate, db: Session = Depends(get_db)):
+def create_debrief(
+    body: DebriefCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
     if not (body.transcript or "").strip():
         raise HTTPException(400, "transcript 不能为空")
     row = Debrief(
         id=f"db_{uuid.uuid4().hex[:10]}",
+        user_id=user.id,
         title=_auto_title(body),
         company=body.company,
         role=body.role,
@@ -65,18 +79,23 @@ def create_debrief(body: DebriefCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{debrief_id}", response_model=DebriefOut)
-def get_debrief(debrief_id: str, db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+def get_debrief(
+    debrief_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     return _to_out(row)
 
 
 @router.put("/{debrief_id}", response_model=DebriefOut)
-def update_debrief(debrief_id: str, body: DebriefUpdate, db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+def update_debrief(
+    debrief_id: str,
+    body: DebriefUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     data = body.model_dump(exclude_unset=True)
     for k, v in data.items():
         setattr(row, k, v)
@@ -86,20 +105,25 @@ def update_debrief(debrief_id: str, body: DebriefUpdate, db: Session = Depends(g
 
 
 @router.delete("/{debrief_id}")
-def delete_debrief(debrief_id: str, db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+def delete_debrief(
+    debrief_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     db.delete(row)
     db.commit()
     return {"ok": True}
 
 
 @router.delete("/{debrief_id}/items/{item_id}", response_model=DebriefOut)
-def delete_debrief_item(debrief_id: str, item_id: str, db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+def delete_debrief_item(
+    debrief_id: str,
+    item_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     items = list(row.items or [])
     new_items = [it for it in items if it.get("id") != item_id]
     if len(new_items) == len(items):
@@ -111,10 +135,12 @@ def delete_debrief_item(debrief_id: str, item_id: str, db: Session = Depends(get
 
 
 @router.post("/{debrief_id}/extract", response_model=DebriefOut)
-async def extract_qa(debrief_id: str, db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+async def extract_qa(
+    debrief_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     llm = get_llm()
     items = await llm.extract_interview_qa(row.transcript, _meta(row))
     row.items = items
@@ -124,10 +150,13 @@ async def extract_qa(debrief_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{debrief_id}/analyze", response_model=DebriefOut)
-async def analyze_qa(debrief_id: str, body: DebriefAnalyzeIn = DebriefAnalyzeIn(), db: Session = Depends(get_db)):
-    row = db.get(Debrief, debrief_id)
-    if not row:
-        raise HTTPException(404, "面经不存在")
+async def analyze_qa(
+    debrief_id: str,
+    body: DebriefAnalyzeIn = DebriefAnalyzeIn(),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    row = get_owned(db, Debrief, debrief_id, user, not_found="面经不存在")
     items = list(row.items or [])
     if not items:
         raise HTTPException(400, "请先提取问答")

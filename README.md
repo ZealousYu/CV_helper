@@ -43,5 +43,6 @@ uvicorn app.main:app --reload --port 8000
 
 ## 注意
 
-- 当前**无多用户登录**，一份 SQLite 共用，适合个人自测；公网请设 `ACCESS_PASSWORD`
+- 支持**用户名密码注册/登录**，数据按账号隔离；首位注册者（或 `.env` 里的 `ADMIN_*`）为管理员，可在「我的」查看用户摘要
+- 公网建议设 `ACCESS_PASSWORD`，并修改 `JWT_SECRET`
 - **不要提交** `backend/.env`（已在 `.gitignore`）

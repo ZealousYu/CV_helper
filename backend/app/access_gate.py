@@ -33,13 +33,19 @@ def request_unlocked(request: Request) -> bool:
     if not expected:
         return True
     cookie = request.cookies.get(COOKIE_NAME) or ""
+    if cookie and hmac.compare_digest(cookie, expected):
+        return True
     header = request.headers.get("x-access-token") or ""
+    if header and hmac.compare_digest(header, expected):
+        return True
+    # Authorization Bearer 仅当等于访问口令派生 token 时算解锁（兼容旧用法）；
+    # 用户登录 JWT 不是访问口令，不能误判。
     auth = request.headers.get("authorization") or ""
-    bearer = ""
     if auth.lower().startswith("bearer "):
         bearer = auth[7:].strip()
-    provided = cookie or header or bearer
-    return bool(provided) and hmac.compare_digest(provided, expected)
+        if bearer and hmac.compare_digest(bearer, expected):
+            return True
+    return False
 
 
 UNLOCK_HTML = """<!DOCTYPE html>
@@ -49,13 +55,13 @@ UNLOCK_HTML = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>简历面试助手 · 访问验证</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:#e8edf4; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
-    .box { background:#fff; padding:28px 24px; border-radius:12px; width:min(400px,92vw); box-shadow:0 8px 28px rgba(21,32,43,.12); }
-    h1 { font-size:20px; margin:0 0 8px; }
-    p { color:#5c6b7a; font-size:14px; margin:0 0 16px; line-height:1.5; }
-    input { width:100%; padding:10px 12px; border:1px solid #b8c5d6; border-radius:8px; font-size:14px; box-sizing:border-box; }
-    button { margin-top:12px; width:100%; padding:10px 14px; border:none; border-radius:8px; background:#1a56db; color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
-    .err { color:#c62828; font-size:13px; margin-top:10px; display:none; }
+    body { font-family: "Source Sans 3", "Noto Sans SC", -apple-system, sans-serif; background:#f3eee6; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .box { background:#fffcf7; padding:28px 24px; border-radius:12px; width:min(400px,92vw); box-shadow:0 6px 18px rgba(44,40,36,.06); border:1px solid #e5ddd2; }
+    h1 { font-size:20px; margin:0 0 8px; color:#2c2824; }
+    p { color:#8a7f74; font-size:14px; margin:0 0 16px; line-height:1.5; }
+    input { width:100%; padding:10px 12px; border:1px solid #d4c8ba; border-radius:8px; font-size:14px; box-sizing:border-box; background:#fffaf4; }
+    button { margin-top:12px; width:100%; padding:10px 14px; border:none; border-radius:8px; background:#c4784a; color:#fffaf4; font-size:14px; font-weight:600; cursor:pointer; }
+    .err { color:#a8483e; font-size:13px; margin-top:10px; display:none; }
   </style>
 </head>
 <body>

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.deps import get_current_user
+from app.models import User
 from app.schemas import IntroIn, IntroOut
 from app.services.llm import get_llm
 
@@ -9,7 +11,8 @@ router = APIRouter(prefix="/api/intro", tags=["intro"])
 
 
 @router.post("", response_model=IntroOut)
-async def intro_assist(body: IntroIn):
+async def intro_assist(body: IntroIn, user: User = Depends(get_current_user)):
+    del user
     llm = get_llm()
     exps = [e.model_dump() for e in body.experiences]
     if body.mode == "generate":

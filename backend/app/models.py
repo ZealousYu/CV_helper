@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy import String, Text, DateTime
+from sqlalchemy import String, Text, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -14,10 +14,22 @@ def _now() -> datetime:
     return datetime.utcnow()
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(256), default="")
+    display_name: Mapped[str] = mapped_column(String(128), default="")
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
 class Experience(Base):
     __tablename__ = "experiences"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(64), index=True, nullable=True)
     type: Mapped[str] = mapped_column(String(32), default="实习")
     company: Mapped[str] = mapped_column(String(256), default="")
     title: Mapped[str] = mapped_column(String(256), default="")
@@ -52,6 +64,7 @@ class KnowledgeItem(Base):
     __tablename__ = "knowledge_items"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(64), index=True, nullable=True)
     source_exp_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     source_node_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     question: Mapped[str] = mapped_column(Text, default="")
@@ -78,6 +91,7 @@ class Debrief(Base):
     __tablename__ = "debriefs"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(64), index=True, nullable=True)
     title: Mapped[str] = mapped_column(String(256), default="")
     company: Mapped[str] = mapped_column(String(256), default="")
     role: Mapped[str] = mapped_column(String(128), default="")
@@ -102,6 +116,7 @@ class InterviewSession(Base):
     __tablename__ = "interview_sessions"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[Optional[str]] = mapped_column(String(64), index=True, nullable=True)
     target_role: Mapped[str] = mapped_column(String(256), default="")
     jd_text: Mapped[str] = mapped_column(Text, default="")
     exp_ids_json: Mapped[str] = mapped_column(Text, default="[]")

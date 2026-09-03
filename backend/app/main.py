@@ -6,6 +6,7 @@ from fastapi import FastAPI, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect, text
 
 from app.access_gate import (
     AccessPasswordMiddleware,
@@ -16,8 +17,9 @@ from app.access_gate import (
 )
 from app.config import settings, _ENV_FILE as _ENV_HINT
 from app.database import Base, SessionLocal, engine
-from app.models import Experience, KnowledgeItem, Debrief, InterviewSession
-from app.routers import experiences, interview, knowledge, debriefs, job, sessions, intro, voice
+from app.models import Experience, KnowledgeItem, Debrief, InterviewSession, User
+from app.routers import experiences, interview, knowledge, debriefs, job, sessions, intro, voice, auth, admin
+from app.routers.auth import ensure_admin_from_env, assign_orphan_data
 
 app = FastAPI(title="CV Helper API", version="0.1.0")
 
@@ -32,6 +34,8 @@ app.add_middleware(
 )
 app.add_middleware(AccessPasswordMiddleware)
 
+app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(experiences.router)
 app.include_router(interview.router)
 app.include_router(sessions.router)
@@ -81,6 +85,23 @@ async def unlock_post(
     return resp
 
 
+def _ensure_user_id_column(table: str) -> None:
+    insp = inspect(engine)
+    if table not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns(table)}
+    if "user_id" in cols:
+        return
+    with engine.begin() as conn:
+        conn.execute(text(f"ALTER TABLE {table} ADD COLUMN user_id VARCHAR(64)"))
+
+
+def _migrate_schema() -> None:
+    Base.metadata.create_all(bind=engine)
+    for table in ("experiences", "knowledge_items", "debriefs", "interview_sessions"):
+        _ensure_user_id_column(table)
+
+
 @app.on_event("startup")
 def on_startup():
     # 确保持久化目录存在（Docker /data）
@@ -89,47 +110,41 @@ def on_startup():
         db_path = Path(db_url[len("sqlite:///"):])
         if db_path.parent and str(db_path.parent) not in ("", "."):
             db_path.parent.mkdir(parents=True, exist_ok=True)
-    Base.metadata.create_all(bind=engine)
-    _seed_if_empty()
-
-
-def _seed_if_empty():
+    _migrate_schema()
     db = SessionLocal()
     try:
-        if db.query(Experience).count() > 0:
-            return
-        exp = Experience(
-            id="exp_001",
-            type="实习",
-            company="XX公司",
-            title="XX公司 · 产品实习生",
-            role="产品实习生",
-            period="2024.06 - 2024.09",
-            summary="负责用户增长模块的数据分析与需求推进，参与 0-1 功能上线。",
-            metrics="DAU +12%，需求交付周期缩短 20%",
-            extra="主导过跨部门周会机制落地",
-        )
-        exp.tags = ["数据分析", "0-1项目"]
-        exp.qa_tree = []
-        db.add(exp)
-
-        exp2 = Experience(
-            id="exp_002",
-            type="项目",
-            company="校园二手",
-            title="校园数据分析项目",
-            role="项目负责人",
-            period="2023.09 - 2024.01",
-            summary="搭建校园二手交易数据分析看板，并做过 RAG 检索优化实验。",
-            metrics="",
-            extra="",
-        )
-        exp2.tags = ["Python", "可视化"]
-        exp2.qa_tree = []
-        db.add(exp2)
-        db.commit()
+        admin_user = ensure_admin_from_env(db)
+        # 若已有管理员但 env 未配：把遗留空归属数据挂到首位管理员
+        if not admin_user:
+            admin_user = db.query(User).filter(User.is_admin.is_(True)).order_by(User.created_at.asc()).first()
+        if admin_user:
+            assign_orphan_data(db, admin_user.id)
+            db.commit()
+            _purge_demo_seed_experiences(db)
     finally:
         db.close()
+
+
+def _purge_demo_seed_experiences(db) -> None:
+    """清理历史自动写入的示例经历。"""
+    demo_summaries = (
+        "用户增长模块的数据分析与需求推进",
+        "校园二手交易数据分析看板",
+        "did stuff",  # 早期接口测试残留
+    )
+    rows = db.query(Experience).all()
+    changed = False
+    for row in rows:
+        summary = row.summary or ""
+        title = row.title or ""
+        if any(s in summary for s in demo_summaries) or title in (
+            "XX公司 · 产品实习生",
+            "校园数据分析项目",
+        ):
+            db.delete(row)
+            changed = True
+    if changed:
+        db.commit()
 
 
 @app.get("/api/health")
@@ -150,5 +165,6 @@ def health():
         "tts_effective": tts_effective,
         "tts_doubao_configured": tts_configured,
         "access_password_enabled": bool((settings.access_password or "").strip()),
+        "auth_required": True,
         "env_file": str(_ENV_HINT),
     }

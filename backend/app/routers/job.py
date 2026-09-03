@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import Experience
+from app.deps import get_current_user
+from app.models import Experience, User
 from app.schemas import JobMatchIn, JobMatchOut
 from app.services.llm import get_llm
 
@@ -15,8 +16,17 @@ router = APIRouter(prefix="/api/job", tags=["job"])
 
 
 @router.post("/match", response_model=JobMatchOut)
-async def match_jd(body: JobMatchIn, db: Session = Depends(get_db)):
-    rows: List[Experience] = db.query(Experience).order_by(Experience.created_at.desc()).all()
+async def match_jd(
+    body: JobMatchIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    rows: List[Experience] = (
+        db.query(Experience)
+        .filter(Experience.user_id == user.id)
+        .order_by(Experience.created_at.desc())
+        .all()
+    )
     experiences = [
         {
             "title": r.title,

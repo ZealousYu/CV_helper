@@ -32,3 +32,4 @@ node_modules/
 .npm-cache-clean/
 demo/node_modules/
 demo/dist/
+bin/

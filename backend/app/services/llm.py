@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from app.config import settings
-from app.tag_utils import normalize_exp_tags
+from app.tag_utils import allowed_child_tags, extract_tags_from_text, normalize_exp_tags
 
 
 L1_TAGS = ["行为面试", "技术", "业务理解", "协作沟通", "职业规划"]
@@ -175,6 +175,9 @@ class BaseLLM:
     ) -> Dict[str, Any]:
         raise NotImplementedError
 
+    async def suggest_exp_tags(self, experience: Dict[str, Any]) -> Dict[str, Any]:
+        raise NotImplementedError
+
 
 def _question_similarity(a: str, b: str) -> bool:
     a = (a or "").strip().lower()
@@ -225,6 +228,20 @@ def _mock_consolidate_nodes(nodes: List[Dict[str, Any]]) -> Dict[str, Any]:
         else f"共 {len(nodes)} 道题，未发现明显重复"
     )
     return {"summary": summary, "groups": groups}
+
+
+def _mock_suggest_exp_tags(experience: Dict[str, Any]) -> Dict[str, Any]:
+    blob = " ".join(
+        [
+            str(experience.get("type") or ""),
+            str(experience.get("company") or ""),
+            str(experience.get("role") or ""),
+            str(experience.get("summary") or ""),
+            str(experience.get("metrics") or ""),
+            str(experience.get("extra") or ""),
+        ]
+    )
+    return {"tags": extract_tags_from_text(blob)}
 
 
 def _intro_brief(experiences: List[Dict[str, Any]]) -> str:
@@ -674,6 +691,9 @@ class MockLLM(BaseLLM):
     ) -> Dict[str, Any]:
         return _mock_intro_guide(content, guide_answers, experiences, target_role)
 
+    async def suggest_exp_tags(self, experience: Dict[str, Any]) -> Dict[str, Any]:
+        return _mock_suggest_exp_tags(experience)
+
 
 class OpenAILLM(BaseLLM):
     """OpenAI 兼容 Chat Completions（也可用国内兼容网关改 base_url）。"""
@@ -1118,6 +1138,38 @@ class OpenAILLM(BaseLLM):
         except Exception:
             pass
         return await MockLLM().intro_guide(content, guide_answers, experiences, target_role)
+
+    async def suggest_exp_tags(self, experience: Dict[str, Any]) -> Dict[str, Any]:
+        allowed = allowed_child_tags()
+        system = (
+            "你是简历标签助手。根据经历内容，从给定「细分标签」列表中选出 2～5 个最贴切的标签。"
+            "只输出 JSON：{\"tags\":[\"标签1\",\"标签2\"]}。"
+            "优先选细分标签；不要自造列表外的词；不要输出大类名 alone。"
+            f"可选标签：{allowed}。"
+        )
+        user = (
+            f"类型：{experience.get('type') or ''}\n"
+            f"公司/项目：{experience.get('company') or ''}\n"
+            f"角色：{experience.get('role') or ''}\n"
+            f"时长：{experience.get('period') or ''}\n"
+            f"工作内容：{experience.get('summary') or ''}\n"
+            f"成果：{experience.get('metrics') or ''}\n"
+            f"补充：{experience.get('extra') or ''}\n"
+            "请给出标签。"
+        )
+        try:
+            data = await self._chat_json(system, user)
+            tags = data.get("tags") or []
+            if isinstance(tags, str):
+                tags = [t.strip() for t in re.split(r"[,，、]", tags) if t.strip()]
+            if not isinstance(tags, list):
+                tags = []
+            tags = normalize_exp_tags([str(t) for t in tags])
+            if tags and tags != ["待整理"]:
+                return {"tags": tags}
+        except Exception:
+            pass
+        return await MockLLM().suggest_exp_tags(experience)
 
 
 def get_llm() -> BaseLLM:

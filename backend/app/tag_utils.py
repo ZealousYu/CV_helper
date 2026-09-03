@@ -57,6 +57,23 @@ _CHILD_TO_PARENT: Dict[str, str] = {
 _PARENT_KEYS = {parent for parent, _ in EXP_TAG_TREE}
 
 
+def allowed_child_tags() -> List[str]:
+    return [child for _, children in EXP_TAG_TREE for child, _ in children]
+
+
+def extract_tags_from_text(text: str) -> List[str]:
+    """启发式：对整段文本匹配所有细分标签（可多选）。"""
+    found: List[str] = []
+    seen: set[str] = set()
+    t = text or ""
+    for _parent, children in EXP_TAG_TREE:
+        for child_name, pat in children:
+            if pat.search(t) and child_name not in seen:
+                seen.add(child_name)
+                found.append(child_name)
+    return found[:6] or ["待整理"]
+
+
 def normalize_exp_tags(tags: List[str]) -> List[str]:
     """将原始标签归并为细分标签（优先），便于筛选；最多 6 个。"""
     children: List[str] = []

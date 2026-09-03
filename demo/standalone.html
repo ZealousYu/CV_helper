@@ -6,123 +6,231 @@
   <title>简历面试助手</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* 排版/间距全局统一；主题只改颜色 */
     :root {
-      --ink: #15202b;
-      --ink-soft: #3d4f5f;
-      --muted: #6b7c8c;
-      --line: #d8e0ea;
-      --line-strong: #b8c5d6;
-      --bg: #e8edf4;
-      --bg-glow: #d5e4f7;
-      --surface: #ffffff;
-      --surface-2: #f5f8fc;
-      --accent: #1a56db;
-      --accent-deep: #1346b5;
-      --accent-soft: #e8f0fe;
-      --ok: #1b7a45;
-      --warn: #b45309;
-      --danger: #c62828;
       --radius: 10px;
-      --shadow: 0 1px 2px rgba(21,32,43,.04), 0 8px 24px rgba(21,32,43,.06);
-      --font: "DM Sans", "Noto Sans SC", sans-serif;
+      --font: "Source Sans 3", "Noto Sans SC", sans-serif;
+      --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.05);
+    }
+    :root, [data-theme="warm"] {
+      --ink: #2c2824;
+      --ink-soft: #5a524a;
+      --muted: #8a7f74;
+      --line: #e5ddd2;
+      --line-strong: #d4c8ba;
+      --bg: #f3eee6;
+      --bg-glow: #ebe3d6;
+      --surface: #fffcf7;
+      --surface-2: #f7f1e8;
+      --accent: #c4784a;
+      --accent-deep: #a86238;
+      --accent-soft: #f5ebe3;
+      --ok: #5c7a4a;
+      --warn: #b07a3a;
+      --danger: #a8483e;
+      --sidebar-bg: #ebe4da;
+      --sidebar-bg-2: #e5ddd2;
+      --sidebar-text: #2c2824;
+      --sidebar-muted: #8a7f74;
+      --sidebar-hover: rgba(44,40,36,.06);
+      --sidebar-active-bg: rgba(196,120,74,.14);
+      --sidebar-brand: #2c2824;
+      --sidebar-border: #d4c8ba;
+      --accent-rgb: 196, 120, 74;
+      --overlay-scrim: rgba(44,40,36,.4);
+      --toast-fg: #fffaf4;
+      --input-bg: #fffaf4;
+      --danger-soft: #faf0ee;
+      --danger-line: #e0b4ae;
+      --ok-soft: #f0f4ec;
+      --ok-line: #b7c4ab;
+    }
+    [data-theme="rational"] {
+      --ink: #1f2933;
+      --ink-soft: #3d4f5f;
+      --muted: #5b6b7c;
+      --line: #e3e7ec;
+      --line-strong: #c5ced8;
+      --bg: #f4f5f7;
+      --bg-glow: #e8ebf0;
+      --surface: #ffffff;
+      --surface-2: #f0f2f5;
+      --accent: #3b6d9a;
+      --accent-deep: #2f5a80;
+      --accent-soft: #e8f0f6;
+      --ok: #3d6b52;
+      --warn: #9a6b2f;
+      --danger: #a34444;
+      --sidebar-bg: #eef1f4;
+      --sidebar-bg-2: #e8ebf0;
+      --sidebar-text: #1f2933;
+      --sidebar-muted: #5b6b7c;
+      --sidebar-hover: rgba(31,41,51,.06);
+      --sidebar-active-bg: rgba(59,109,154,.12);
+      --sidebar-brand: #1f2933;
+      --sidebar-border: #d5dbe3;
+      --accent-rgb: 59, 109, 154;
+      --overlay-scrim: rgba(31,41,51,.4);
+      --toast-fg: #ffffff;
+      --input-bg: #ffffff;
+      --danger-soft: #f7ecec;
+      --danger-line: #e0b4ae;
+      --ok-soft: #eef4ef;
+      --ok-line: #b7c4ab;
+    }
+    [data-theme="night"] {
+      color-scheme: dark;
+      --ink: #e6e8ec;
+      --ink-soft: #c5cad3;
+      --muted: #9aa3b0;
+      --line: #3a414c;
+      --line-strong: #4a5462;
+      --bg: #1a1d22;
+      --bg-glow: #22262d;
+      --surface: #242830;
+      --surface-2: #2c313a;
+      --accent: #8fb4d6;
+      --accent-deep: #a8c7e0;
+      --accent-soft: #2a3542;
+      --ok: #8fbc8f;
+      --warn: #d4b06a;
+      --danger: #e09088;
+      --sidebar-bg: #16191e;
+      --sidebar-bg-2: #14171c;
+      --sidebar-text: #e6e8ec;
+      --sidebar-muted: #9aa3b0;
+      --sidebar-hover: rgba(255,255,255,.06);
+      --sidebar-active-bg: rgba(143,180,214,.16);
+      --sidebar-brand: #f0f2f5;
+      --sidebar-border: #2e343e;
+      --accent-rgb: 143, 180, 214;
+      --overlay-scrim: rgba(0,0,0,.55);
+      --toast-fg: #1a1d22;
+      --input-bg: #1e2228;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.28);
+      --danger-soft: #3a2a2a;
+      --danger-line: #7a4a48;
+      --ok-soft: #2a332a;
+      --ok-line: #5a7a5a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: var(--font);
       font-size: 14px;
       color: var(--ink);
-      background:
-        radial-gradient(900px 420px at 12% -10%, var(--bg-glow), transparent 55%),
-        radial-gradient(700px 380px at 100% 0%, #e3ebe8, transparent 50%),
-        var(--bg);
+      background: var(--bg);
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
     .app { display: flex; min-height: 100vh; }
     .sidebar {
       width: 220px;
-      background: linear-gradient(180deg, #182433 0%, #121a24 100%);
-      color: #d7e0ea;
+      background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-bg-2) 100%);
+      color: var(--sidebar-text);
       padding: 20px 0 16px;
       flex-shrink: 0;
       overflow-y: auto;
       max-height: 100vh;
-      border-right: 1px solid rgba(255,255,255,.06);
+      border-right: 1px solid var(--sidebar-border);
     }
     .sidebar .brand {
       padding: 0 18px 18px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid var(--sidebar-border);
       margin-bottom: 8px;
     }
     .sidebar .brand-mark {
       font-size: 11px;
-      letter-spacing: .14em;
+      letter-spacing: .12em;
       text-transform: uppercase;
-      color: #7f95ab;
+      color: var(--sidebar-muted);
       font-weight: 600;
       margin-bottom: 6px;
     }
     .sidebar .brand-name {
       font-size: 17px;
       font-weight: 700;
-      color: #fff;
+      color: var(--sidebar-brand);
       letter-spacing: -.01em;
       line-height: 1.25;
     }
     .sidebar .brand-tag {
       margin-top: 6px;
       font-size: 12px;
-      color: #8fa3b6;
+      color: var(--sidebar-muted);
       line-height: 1.4;
     }
-    .sidebar .nav-group { padding: 10px 18px 4px; font-size: 11px; color: #7a8fa3; font-weight: 600; letter-spacing: .04em; }
+    .sidebar .nav-group { padding: 10px 18px 4px; font-size: 11px; color: var(--sidebar-muted); font-weight: 600; letter-spacing: .04em; }
     .sidebar button {
       display: block; width: calc(100% - 16px); margin: 2px 8px; text-align: left;
       padding: 10px 12px; border: none; background: none; cursor: pointer;
-      color: #c5d2de; font-size: 14px; font-family: inherit; border-radius: 8px;
+      color: var(--sidebar-text); font-size: 14px; font-family: inherit; border-radius: 8px;
       transition: background .15s, color .15s;
     }
-    .sidebar button:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .sidebar button:hover { background: var(--sidebar-hover); color: var(--sidebar-brand); }
     .sidebar button.active {
-      background: rgba(26,86,219,.28);
-      color: #fff;
+      background: var(--sidebar-active-bg);
+      color: var(--accent-deep);
       font-weight: 600;
       box-shadow: inset 3px 0 0 var(--accent);
     }
     .nav-status {
       padding: 8px 18px 12px;
       font-size: 11px;
-      color: #8fa3b6;
+      color: var(--sidebar-muted);
       line-height: 1.5;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid var(--sidebar-border);
       margin-bottom: 6px;
+    }
+    .nav-user {
+      padding: 14px 18px 12px;
+      color: var(--sidebar-brand);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      line-height: 1.3;
+      word-break: break-word;
+      border-bottom: 1px solid var(--sidebar-border);
+      margin-bottom: 6px;
+    }
+    .nav-user .nav-user-label {
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--sidebar-muted);
+    }
+    .me-account-name {
+      margin-top: 6px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -.01em;
     }
     .main {
       flex: 1;
       padding: 28px 32px 40px;
       overflow: auto;
-      max-width: 1180px;
+      max-width: 960px;
     }
     .page-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 700;
-      letter-spacing: -.02em;
-      margin-bottom: 8px;
+      letter-spacing: -.015em;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
       color: var(--ink);
-      line-height: 1.2;
+      line-height: 1.25;
     }
     .page-lead {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 20px;
-      max-width: 52em;
+      margin-bottom: 18px;
+      max-width: 48em;
       line-height: 1.55;
     }
     .card {
@@ -146,7 +254,7 @@
     .hub-card:hover {
       border-color: var(--accent);
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(26,86,219,.1);
+      box-shadow: 0 4px 16px rgba(var(--accent-rgb), .14);
     }
     .hub-card strong { display: block; font-size: 16px; font-weight: 650; color: var(--ink); }
     .hub-card .meta { margin-top: 6px; }
@@ -158,24 +266,24 @@
       cursor: pointer;
       margin-bottom: 12px;
       border-radius: var(--radius);
-      background: rgba(255,255,255,.55);
+      background: color-mix(in srgb, var(--surface) 70%, transparent);
       transition: border-color .15s, background .15s, color .15s;
     }
     .upload:hover, .upload.drag {
       border-color: var(--accent);
       background: var(--accent-soft);
-      color: var(--accent);
+      color: var(--accent-deep);
     }
     .parse-modal, .confirm-modal, .modal-bg, .overlay, .loading-mask {
       position: fixed; inset: 0; z-index: 350;
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
-    .parse-modal { background: rgba(21,32,43,.4); z-index: 350; }
-    .confirm-modal { background: rgba(21,32,43,.45); z-index: 450; }
-    .modal-bg { background: rgba(21,32,43,.4); z-index: 200; }
-    .overlay { background: rgba(21,32,43,.35); justify-content: flex-end; z-index: 100; padding: 0; }
+    .parse-modal { background: var(--overlay-scrim); z-index: 350; }
+    .confirm-modal { background: var(--overlay-scrim); z-index: 450; }
+    .modal-bg { background: var(--overlay-scrim); z-index: 200; }
+    .overlay { background: var(--overlay-scrim); justify-content: flex-end; z-index: 100; padding: 0; }
     .loading-mask {
-      background: rgba(232,237,244,.78);
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
       flex-direction: column; gap: 12px; z-index: 400;
     }
     .parse-panel, .confirm-panel, .modal {
@@ -185,17 +293,17 @@
       overflow: auto;
       border-radius: 12px;
       padding: 22px;
-      box-shadow: 0 16px 48px rgba(21,32,43,.2);
+      box-shadow: 0 16px 48px rgba(0,0,0,.14);
       border: 1px solid var(--line);
     }
     .confirm-panel { width: min(420px, 100%); }
     .modal { width: 560px; max-width: 92vw; max-height: 85vh; }
     .overlay-panel {
       width: 380px; height: 100%; background: var(--surface);
-      padding: 22px; box-shadow: -8px 0 28px rgba(21,32,43,.12); overflow-y: auto;
+      padding: 22px; box-shadow: -8px 0 28px rgba(0,0,0,.08); overflow-y: auto;
     }
     .parse-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-    .parse-card.selected { border-color: var(--accent); background: #f7faff; }
+    .parse-card.selected { border-color: var(--accent); background: var(--accent-soft); }
     .parse-card label.row { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
     .parse-card input[type=checkbox] { margin-top: 3px; }
     .btn {
@@ -204,44 +312,54 @@
       font-family: inherit; color: var(--ink); font-weight: 500;
       transition: background .12s, border-color .12s, color .12s;
     }
-    .btn:hover { background: var(--surface-2); border-color: #9aafc4; }
+    .btn:hover { background: var(--surface-2); border-color: var(--line-strong); }
     .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .btn-primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
-    .btn-active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-    .btn-ghost { background: transparent; border-color: transparent; color: var(--accent); }
+    .btn-primary { background: var(--accent); color: var(--toast-fg); border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--toast-fg); }
+    .btn-active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-deep); }
+    .btn-ghost { background: transparent; border-color: transparent; color: var(--accent-deep); }
     .btn-ghost:hover { background: var(--accent-soft); }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
-    .btn-danger { background: #fff; color: var(--danger); border-color: #ef9a9a; }
-    .btn-danger:hover { background: #ffebee; }
-    .btn-danger-solid { background: var(--danger); color: #fff; border-color: var(--danger); }
-    .btn-danger-solid:hover { background: #b71c1c; }
+    .btn-danger { background: var(--surface); color: var(--danger); border-color: var(--danger-line, var(--line-strong)); }
+    .btn-danger:hover { background: var(--danger-soft, var(--surface-2)); }
+    .btn-danger-solid { background: var(--danger); color: var(--toast-fg); border-color: var(--danger); }
+    .btn-danger-solid:hover { filter: brightness(0.92); }
     .tag {
-      display: inline-block; background: #eef2f6; padding: 3px 9px; border-radius: 999px;
-      font-size: 11px; margin: 0 4px 4px 0; cursor: default; border: 1px solid transparent; color: var(--ink-soft);
+      display: inline-block; background: var(--surface-2); padding: 3px 9px; border-radius: 8px;
+      font-size: 11px; margin: 0 4px 4px 0; cursor: default; border: 1px solid var(--line); color: var(--ink-soft);
     }
-    .tag.clickable { cursor: pointer; background: var(--accent-soft); color: var(--accent); border-color: #d0dcf5; }
-    .tag.clickable:hover { background: #dce8fb; }
+    .tag.clickable { cursor: pointer; background: var(--accent-soft); color: var(--accent-deep); border-color: var(--line); }
+    .tag.clickable:hover { background: var(--surface-2); }
     .tag.clickable.tag-on {
-      background: var(--accent); color: #fff; border-color: var(--accent-deep);
-      font-weight: 600; box-shadow: 0 1px 2px rgba(26,86,219,.25);
+      background: var(--accent); color: var(--toast-fg); border-color: var(--accent-deep);
+      font-weight: 600; box-shadow: 0 1px 2px rgba(var(--accent-rgb), .2);
     }
     .tag.tag-parent { font-weight: 600; padding: 4px 12px; font-size: 12px; border-radius: 8px; }
-    .tag.tag-child { background: #f5f8fc; color: #334; border-color: #dde5f2; border-radius: 8px; }
-    .tag.tag-child.tag-on { background: #0f3ead; color: #fff; border-color: #0c3491; }
-    .tag.clickable.tag-l1 { background: var(--accent-soft); color: var(--accent); border-color: #c5d4f7; border-radius: 8px; }
-    .tag.clickable.tag-l1.tag-on, .tag.clickable.tag-l1:active { background: var(--accent); color: #fff; }
+    .tag.tag-child { background: var(--surface-2); color: var(--ink-soft); border-color: var(--line); border-radius: 8px; }
+    .tag.tag-child.tag-on { background: var(--accent-deep); color: var(--toast-fg); border-color: var(--accent-deep); }
+    .tag.clickable.tag-l1 { background: var(--accent-soft); color: var(--accent-deep); border-color: var(--line); border-radius: 8px; }
+    .tag.clickable.tag-l1.tag-on, .tag.clickable.tag-l1:active { background: var(--accent); color: var(--toast-fg); }
     .tag-sub-row { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
-    textarea, input[type=text], input[type=month], input[type=search], select {
+    textarea, input[type=text], input[type=password], input[type=month], input[type=search], select {
       width: 100%; padding: 10px 12px; border: 1px solid var(--line-strong);
-      border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff; color: var(--ink);
+      border-radius: 8px; font-family: inherit; font-size: 14px; background: var(--input-bg); color: var(--ink);
     }
     textarea:focus, input:focus, select:focus {
-      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,86,219,.15);
+      outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .18);
     }
     textarea { min-height: 80px; resize: vertical; }
+    textarea.auto-grow {
+      overflow-y: hidden;
+      resize: none;
+      max-height: 360px;
+      field-sizing: content; /* 新浏览器原生随内容增高 */
+    }
+    textarea.auto-grow.is-capped { overflow-y: auto; }
     .form-row { margin-bottom: 12px; }
     .form-row label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: var(--ink); }
+    .form-row label.req-label, label.req-label { color: var(--danger); }
+    .form-row label.req-label .req, .req-label .req, .form-row label .req, .req { color: var(--danger); font-weight: 700; }
+    .form-row label.req-label .hint { color: var(--muted); font-weight: 400; }
     .form-row .hint { font-weight: 400; color: var(--muted); font-size: 12px; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .hidden { display: none !important; }
@@ -263,13 +381,13 @@
       border-radius: 8px; border: 1px solid var(--line);
     }
     .stage-pill {
-      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
-      background: #e8eef5; color: var(--ink-soft);
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 8px;
+      background: var(--line); color: var(--ink-soft);
     }
-    .stage-pill.on { background: var(--accent-soft); color: var(--accent); }
+    .stage-pill.on { background: var(--accent-soft); color: var(--accent-deep); }
     .question-box {
-      background: linear-gradient(135deg, #f4f8ff 0%, #eef4fc 100%);
-      border: 1px solid #c5d4f7; padding: 22px 20px; font-size: 18px; font-weight: 650;
+      background: var(--surface-2);
+      border: 1px solid var(--line); padding: 22px 20px; font-size: 18px; font-weight: 650;
       margin-bottom: 14px; min-height: 84px; line-height: 1.55; border-radius: 10px; color: var(--ink);
     }
     .answer-actions { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 0; }
@@ -281,7 +399,7 @@
       border-radius: 8px; cursor: pointer; font-size: 13px; border: 1px solid transparent; line-height: 1.4;
     }
     .tree-node:hover { background: var(--surface-2); }
-    .tree-node.active { background: var(--accent-soft); border-color: #c5d4f7; }
+    .tree-node.active { background: var(--accent-soft); border-color: var(--line); }
     .tree-node .tree-label { flex: 1; min-width: 0; }
     .tree-node .tree-del {
       flex-shrink: 0; opacity: 0; padding: 0 4px; font-size: 12px; color: var(--danger);
@@ -289,31 +407,43 @@
     }
     .tree-node:hover .tree-del, .tree-node.active .tree-del { opacity: 1; }
     .toast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-      background: var(--ink); color: #fff; padding: 11px 20px; border-radius: 999px;
-      z-index: 300; font-size: 13px; box-shadow: 0 8px 24px rgba(21,32,43,.25);
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--ink);
+      color: var(--toast-fg);
+      padding: 14px 22px;
+      border-radius: 12px;
+      z-index: 500;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.45;
+      text-align: center;
+      max-width: min(90vw, 360px);
+      box-shadow: 0 12px 36px rgba(0,0,0,.22);
     }
     .badge {
-      display: inline-block; padding: 2px 8px; background: #eef2f6; border-radius: 999px;
-      font-size: 11px; font-weight: 600; color: var(--ink-soft);
+      display: inline-block; padding: 2px 8px; background: var(--surface-2); border-radius: 8px;
+      font-size: 11px; font-weight: 600; color: var(--ink-soft); border: 1px solid var(--line);
     }
-    .badge.accent { background: var(--accent-soft); color: var(--accent); }
+    .badge.accent { background: var(--accent-soft); color: var(--accent-deep); border-color: var(--line); }
     .feedback {
-      border: 1px solid #ffe082; background: #fffdf2; padding: 14px; margin: 12px 0; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--surface-2); padding: 14px; margin: 12px 0; border-radius: 10px;
     }
     .score-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; flex-wrap: wrap; }
-    .score-num { font-size: 22px; font-weight: 700; color: var(--accent); min-width: 52px; }
-    .score-bar { flex: 1; min-width: 120px; height: 8px; background: #e8eef8; border-radius: 4px; overflow: hidden; }
+    .score-num { font-size: 22px; font-weight: 700; color: var(--accent-deep); min-width: 52px; }
+    .score-bar { flex: 1; min-width: 120px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
     .score-bar > i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
     .score-dims { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    .score-dim { font-size: 11px; background: #fff; border: 1px solid #c5d4f7; color: #333; padding: 2px 8px; border-radius: 999px; }
-    .voice-btn.recording { background: #ffebee; border-color: #e53935; color: #c62828; font-weight: 600; }
+    .score-dim { font-size: 11px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); padding: 2px 8px; border-radius: 8px; }
+    .voice-btn.recording { background: var(--danger-soft, var(--surface-2)); border-color: var(--danger-line, var(--line-strong)); color: var(--danger); font-weight: 600; }
     .notebook-qa {
       padding: 10px 12px; border-left: 3px solid var(--line-strong); margin: 6px 0; font-size: 13px;
       background: var(--surface-2); border-radius: 0 8px 8px 0;
     }
     .list-row {
-      display: flex; justify-content: space-between; align-items: center; padding: 14px 16px;
+      display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
       background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
       margin-bottom: 8px; cursor: pointer; gap: 12px; box-shadow: var(--shadow);
       transition: border-color .15s;
@@ -321,12 +451,30 @@
     .list-row:hover { border-color: var(--accent); }
     .row-actions { flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
     .summary-bar {
-      background: var(--accent-soft); border: 1px solid #c5d4f7; border-radius: var(--radius);
+      background: var(--accent-soft); border: 1px solid var(--line); border-radius: var(--radius);
       padding: 14px 16px; margin-bottom: 16px;
     }
     .match-ok { color: var(--ok); }
     .match-gap { color: var(--danger); }
-    .match-tip { color: #1565c0; }
+    .match-tip { color: var(--accent-deep); }
+    .exp-warn {
+      margin-top: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--danger);
+      background: var(--danger-soft, var(--surface-2));
+      border: 1px solid var(--danger-line, var(--line-strong));
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+    .tags-edit-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .tags-edit-row input { flex: 1; min-width: 0; }
+    .tags-edit-row .btn { margin: 0; flex-shrink: 0; white-space: nowrap; }
     .quiz-card {
       background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
       padding: 24px; max-width: 640px; margin: 0 auto; box-shadow: var(--shadow);
@@ -343,24 +491,24 @@
     .divider { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
     .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
-    .status-dot.weak { background: #f57c00; }
-    .status-dot.ok { background: #43a047; }
-    .qa-weak { border-color: #e53935 !important; background: #fff5f5; }
-    .qa-good { border-color: #43a047; background: #f4fff6; }
-    .qa-pending { border-left: 3px solid #bbb; }
+    .status-dot.weak { background: var(--warn); }
+    .status-dot.ok { background: var(--ok); }
+    .qa-weak { border-color: var(--danger-line, var(--danger)) !important; background: var(--danger-soft, var(--surface-2)); }
+    .qa-good { border-color: var(--ok-line, var(--ok)); background: var(--ok-soft, var(--surface-2)); }
+    .qa-pending { border-left: 3px solid var(--line-strong); }
     .weak-label { color: var(--danger); font-weight: 600; font-size: 12px; }
     .good-label { color: var(--ok); font-weight: 600; font-size: 12px; }
     .spinner {
-      width: 36px; height: 36px; border: 3px solid #d0d7e8; border-top-color: var(--accent);
+      width: 36px; height: 36px; border: 3px solid var(--line); border-top-color: var(--accent);
       border-radius: 50%; animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { font-size: 14px; color: var(--ink); font-weight: 600; }
-    .bar-track { width: 200px; height: 6px; background: #e8eef8; border-radius: 4px; overflow: hidden; }
+    .bar-track { width: 200px; height: 6px; background: var(--line); border-radius: 4px; overflow: hidden; }
     .bar-fill { height: 100%; width: 40%; background: var(--accent); border-radius: 4px; animation: bar 1.2s ease-in-out infinite; }
     @keyframes bar { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
     .tip-box {
-      background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius);
       padding: 12px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.55; color: var(--ink-soft);
     }
     .tip-box summary { cursor: pointer; font-weight: 600; color: var(--ink); list-style: none; }
@@ -370,16 +518,61 @@
     .tip-box ol { margin: 8px 0 0 1.2em; }
     .tip-box li { margin-bottom: 4px; }
     .hub-back { margin-right: 4px; }
+    .voice-tts-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .voice-speaker-select {
+      width: 120px;
+      max-width: 120px;
+      flex: 0 0 120px;
+      padding: 8px 10px;
+    }
     .filter-card { padding: 16px 18px; }
     .exp-card .exp-title { font-size: 16px; font-weight: 650; }
     .exp-card p { color: var(--ink-soft); }
-    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; margin-bottom: 14px; }
-    .toolbar .upload { flex: 1; margin: 0; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 7fr 3fr;
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+    .toolbar .upload { margin: 0; min-height: 88px; display: flex; align-items: center; justify-content: center; }
+    .toolbar .add-exp {
+      margin: 0;
+      width: 100%;
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    @media (max-width: 720px) {
+      .toolbar { grid-template-columns: 1fr; }
+    }
     .confirm-panel h3 { font-size: 16px; margin-bottom: 8px; }
-    .confirm-skip { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0 4px; font-size: 12px; color: #666; cursor: pointer; line-height: 1.4; }
+    .confirm-skip { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0 4px; font-size: 12px; color: var(--muted); cursor: pointer; line-height: 1.4; }
     .confirm-skip input { margin-top: 2px; }
-    code { font-size: 12px; background: #eef2f6; padding: 1px 5px; border-radius: 4px; }
-    a { color: var(--accent); }
+    code { font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+    a { color: var(--accent-deep); }
+    .auth-gate {
+      max-width: 400px; margin: 48px auto; padding: 32px 28px;
+      background: var(--surface); border-radius: 12px; border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .auth-gate h1 { font-size: 22px; margin-bottom: 6px; font-weight: 700; letter-spacing: -.02em; }
+    .auth-gate .tabs { display: flex; gap: 8px; margin: 16px 0 18px; }
+    .auth-gate .tabs button { flex: 1; }
+    .auth-admin-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line);
+    }
     @media (max-width: 900px) {
       .app { flex-direction: column; }
       .sidebar { width: 100%; max-height: none; }
@@ -506,10 +699,40 @@ const DELETE_SCOPES = {
 };
 
 const PROFILE_KEY = 'cv_helper_profile';
+const INTRO_KEY = 'cv_helper_intro';
 const SKIP_DELETE_KEY = 'cv_helper_skip_delete_confirm';
+const AUTH_TOKEN_KEY = 'cv_helper_token';
+const THEME_KEY = 'cv_helper_theme';
+
+function getTheme() {
+  const t = localStorage.getItem(THEME_KEY);
+  if (t === 'rational' || t === 'night' || t === 'warm') return t;
+  return 'warm';
+}
+
+function applyTheme(theme) {
+  const t = (theme === 'rational' || theme === 'night') ? theme : 'warm';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem(THEME_KEY, t);
+}
+
+function setTheme(theme) {
+  const t = (theme === 'rational' || theme === 'night') ? theme : 'warm';
+  applyTheme(t);
+  state.theme = t;
+  const labels = { warm: '温暖陪伴', rational: '理性工具', night: '夜间模式' };
+  toast('已切换：' + (labels[t] || t));
+  render();
+}
 
 let state = {
   page: 'experience',
+  authUser: null,
+  authMode: 'login',
+  theme: getTheme(),
+  adminUsers: null,
+  adminDetail: null,
+  adminSummary: null,
   notebookDetailExpId: null,
   knowledgeFilter: null,
   knowledgeEditId: null,
@@ -526,8 +749,8 @@ let state = {
   apiOnline: false,
   apiError: '',
   experiences: [],
-  introContent: '您好，我是 CHEN，目前专注于产品方向。曾在 XX 公司担任产品实习生，负责增长模块的数据分析与需求推进，期间主导指标体系建设，助力 DAU 提升 12%。我擅长用数据驱动决策，也具备跨部门协作经验。',
-  introVersions: [{ id: 'v1', label: 'AI初稿', date: '2026-08-20', content: '' }],
+  introContent: '',
+  introVersions: [{ id: 'v1', label: '定稿', date: '', content: '' }],
   knowledge: [],
   debriefs: [],
   debriefDetailId: null,
@@ -538,12 +761,16 @@ let state = {
   expTypeFilter: '全部',
   expTagParent: '',
   expTagFilter: '',
+  expPasteOpen: false,
   notebookQuiz: null,
   consolidatePreview: null,
   introWizard: null,
-  profile: { displayName: 'CHEN', targetRole: '', note: '' },
+  introSaved: '',
+  introDirty: false,
+  profileDirty: false,
+  profile: { displayName: '', targetRole: '', note: '' },
   interview: {
-    expId: 'exp_001', phase: 'idle', activeNodeId: null, branchFrom: null,
+    expId: '', phase: 'idle', activeNodeId: null, branchFrom: null,
     currentQ: '', draft: '', mode: null, voiceListening: false,
   },
   voice: {
@@ -576,15 +803,65 @@ const MOCK_Q = {
 // http(s) 同域部署（含公网域名）直接走相对路径；file:// 本地打开才回落本机
 const API_BASE = location.protocol === 'file:' ? 'http://127.0.0.1:8000' : '';
 
+function getAuthToken() {
+  return localStorage.getItem(AUTH_TOKEN_KEY) || '';
+}
+
+function setAuthSession(token, user) {
+  if (token) localStorage.setItem(AUTH_TOKEN_KEY, token);
+  state.authUser = user || null;
+}
+
+function clearAuthSession() {
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  state.authUser = null;
+  state.adminUsers = null;
+  state.adminDetail = null;
+  state.adminSummary = null;
+  state.experiences = [];
+  state.knowledge = [];
+  state.debriefs = [];
+  state.session = null;
+}
+
+function authHeaders(extra) {
+  const h = Object.assign({}, extra || {});
+  const token = getAuthToken();
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+
+function _errDetail(text, status, statusText) {
+  let msg = status + ' ' + statusText;
+  try {
+    const j = JSON.parse(text);
+    if (j && j.detail) {
+      msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail);
+    } else if (text) msg = text;
+  } catch (e) {
+    if (text) msg = text;
+  }
+  return msg;
+}
+
 async function api(path, opts) {
   opts = opts || {};
-  const res = await fetch(API_BASE + path, Object.assign({
-    headers: { 'Content-Type': 'application/json' },
-  }, opts));
+  const headers = authHeaders(Object.assign(
+    { 'Content-Type': 'application/json' },
+    opts.headers || {}
+  ));
+  if (opts.body instanceof FormData) delete headers['Content-Type'];
+  const fetchOpts = Object.assign({}, opts, { headers: headers });
+  const res = await fetch(API_BASE + path, fetchOpts);
+  if (res.status === 401 && path.indexOf('/api/auth/') !== 0 && path !== '/api/health') {
+    clearAuthSession();
+    render();
+    throw new Error('请先登录');
+  }
   if (!res.ok) {
-    let msg = res.status + ' ' + res.statusText;
-    try { msg = await res.text(); } catch (e) {}
-    throw new Error(msg);
+    let body = '';
+    try { body = await res.text(); } catch (e) {}
+    throw new Error(_errDetail(body, res.status, res.statusText));
   }
   if (res.status === 204) return null;
   const ct = res.headers.get('content-type') || '';
@@ -997,51 +1274,159 @@ function currentVoicePack() {
 function renderVoiceTtsBar() {
   const configured = state.ttsDoubaoConfigured;
   const usingDoubao = shouldUseDoubaoTts();
-  const mode = state.voiceTtsMode || 'auto';
   const voices = state.ttsVoices || [];
   const speaker = state.voiceSpeaker || state.ttsDefaultSpeaker || (voices[0] && voices[0].id) || '';
   const pack = currentVoicePack();
+  const speaking = !!(state.voice && state.voice.speaking);
+  const previewBtn = `<button class="btn btn-sm" type="button"
+      ${speaking ? 'disabled' : ''}
+      onclick="speakQuestion('这是一段语音试听。请介绍一段你最有代表性的项目经历。')">
+      ${speaking ? '试听中…' : '试听'}
+    </button>`;
   return `
     <div class="tip-box" style="margin-bottom:12px">
       <strong>读题声音</strong>
       <span class="meta" style="margin-left:8px">${usingDoubao ? '豆包语音' + (pack ? ' · ' + pack.name : '') : '浏览器自带（偏机械，建议接豆包）'}</span>
-      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-        <button class="btn btn-sm ${mode==='doubao'?'btn-active':''}" ${configured?'':'disabled'} onclick="setVoiceTtsMode('doubao')">豆包</button>
-        <button class="btn btn-sm ${mode==='auto'?'btn-active':''}" onclick="setVoiceTtsMode('auto')">自动</button>
-        <button class="btn btn-sm ${mode==='browser'?'btn-active':''}" onclick="setVoiceTtsMode('browser')">浏览器</button>
-        <button class="btn btn-sm" onclick="speakQuestion('这是一段语音试听。请介绍一段你最有代表性的项目经历。')">试听</button>
-      </div>
       ${configured && voices.length ? `
       <div class="form-row" style="margin:10px 0 0">
-        <label>面试官音色 <span class="hint">切换后可再点试听</span></label>
-        <select onchange="setVoiceSpeaker(this.value)">
-          ${voices.map(function (v) {
-            return `<option value="${esc(v.id)}" ${v.id===speaker?'selected':''}>${esc(v.gender)} · ${esc(v.name)} — ${esc(v.style || '')}</option>`;
-          }).join('')}
-        </select>
-      </div>` : ''}
-      ${configured ? '' : `<p class="meta" style="margin-top:8px;line-height:1.55">
-        可在后端 <code>.env</code> 配置豆包语音密钥后重启服务，读题会更自然。
+        <label>面试官音色</label>
+        <div class="voice-tts-controls">
+          <select class="voice-speaker-select" ${speaking ? 'disabled' : ''} onchange="setVoiceSpeaker(this.value)">
+            ${voices.map(function (v) {
+              return `<option value="${esc(v.id)}" ${v.id===speaker?'selected':''}>${esc(v.name)}</option>`;
+            }).join('')}
+          </select>
+          ${previewBtn}
+        </div>
+      </div>` : `
+      <div style="margin-top:8px">${previewBtn}</div>
+      <p class="meta" style="margin-top:8px;line-height:1.55">
+        配置豆包语音后，读题会更自然。
       </p>`}
     </div>`;
+}
+
+/* ========== auth ========== */
+function renderAuthScreen() {
+  const mode = state.authMode === 'register' ? 'register' : 'login';
+  const isReg = mode === 'register';
+  return `
+    <div class="auth-gate">
+      <h1>简历面试助手</h1>
+      <p class="meta">把练习变成可复习的资料。每人独立账号，数据互不可见。</p>
+      <div class="tabs">
+        <button class="btn ${!isReg ? 'btn-primary' : ''}" onclick="state.authMode='login';render()">登录</button>
+        <button class="btn ${isReg ? 'btn-primary' : ''}" onclick="state.authMode='register';render()">注册</button>
+      </div>
+      <div class="form-row">
+        <label>用户名</label>
+        <input type="text" id="auth-username" autocomplete="username" placeholder="2–32 位，字母数字或中文" />
+      </div>
+      <div class="form-row">
+        <label>密码</label>
+        <input type="password" id="auth-password" autocomplete="${isReg ? 'new-password' : 'current-password'}" placeholder="至少 4 位" />
+      </div>
+      ${isReg ? `<div class="form-row">
+        <label>称呼 <span class="hint">可选</span></label>
+        <input type="text" id="auth-display" autocomplete="nickname" placeholder="怎么称呼你" />
+      </div>` : ''}
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitAuth()">${isReg ? '注册并进入' : '登录'}</button>
+      ${!state.apiOnline && state.apiError ? `<p class="meta" style="margin-top:12px;color:var(--danger)">服务未连接：${esc(state.apiError)}</p>` : ''}
+    </div>`;
+}
+
+async function submitAuth() {
+  const username = ((document.getElementById('auth-username') || {}).value || '').trim();
+  const password = ((document.getElementById('auth-password') || {}).value || '');
+  const display = ((document.getElementById('auth-display') || {}).value || '').trim();
+  if (!username || password.length < 4) {
+    toast('请填写用户名和至少 4 位密码');
+    return;
+  }
+  const isReg = state.authMode === 'register';
+  try {
+    showLoading(isReg ? '正在注册…' : '正在登录…');
+    const data = await api(isReg ? '/api/auth/register' : '/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        display_name: display || username,
+      }),
+    });
+    setAuthSession(data.access_token, data.user);
+    hideLoading();
+    toast(isReg ? '注册成功' : '已登录');
+    if (data.user && data.user.is_admin) {
+      state.page = 'admin';
+      state.adminUsers = null;
+      state.adminDetail = null;
+      await loadAdminUsers();
+    } else {
+      state.page = 'experience';
+      await refreshAll();
+      render();
+    }
+  } catch (e) {
+    hideLoading();
+    toast((isReg ? '注册失败：' : '登录失败：') + e.message);
+  }
+}
+
+function logout() {
+  clearAuthSession();
+  state.authMode = 'login';
+  toast('已退出登录');
+  render();
+}
+
+async function loadAdminUsers() {
+  try {
+    state.adminUsers = await api('/api/admin/users');
+    render();
+  } catch (e) {
+    toast('加载用户列表失败：' + e.message);
+  }
+}
+
+async function loadAdminDetail(userId) {
+  try {
+    showLoading('加载用户数据…');
+    state.adminDetail = await api('/api/admin/users/' + encodeURIComponent(userId) + '/detail');
+    hideLoading();
+    state.page = 'admin-detail';
+    render();
+  } catch (e) {
+    hideLoading();
+    toast('加载失败：' + e.message);
+  }
+}
+
+function isAdminSession() {
+  return !!(state.authUser && state.authUser.is_admin);
 }
 
 /* ========== navigation ========== */
 function renderNav() {
   let html = '';
-  NAV.forEach(function (n) {
-    let active = state.page === n.id;
-    if (n.id === 'practice') active = PRACTICE_PAGES.indexOf(state.page) >= 0;
-    if (n.id === 'review') active = REVIEW_PAGES.indexOf(state.page) >= 0;
-    html += `<button class="${active ? 'active' : ''}" onclick="go('${n.id}')">${n.label}</button>`;
-  });
-  const p = state.profile || loadProfile();
-  const llm = state.llmEffective || 'mock';
-  const tts = shouldUseDoubaoTts() ? '豆包' : '浏览器';
-  const status = state.apiOnline
-    ? '<div class="nav-status">模型 ' + llm + '<br/>读题 ' + tts + '</div>'
-    : '<div class="nav-status" style="color:#ff8a80">后端未连接</div>';
-  document.getElementById('nav').innerHTML = status + html;
+  if (isAdminSession()) {
+    html += `<button class="${state.page === 'admin' || state.page === 'admin-detail' ? 'active' : ''}" onclick="state.page='admin';state.adminDetail=null;loadAdminUsers()">用户数据</button>`;
+    html += `<button onclick="logout()">退出</button>`;
+  } else if (state.authUser) {
+    NAV.forEach(function (n) {
+      let active = state.page === n.id;
+      if (n.id === 'practice') active = PRACTICE_PAGES.indexOf(state.page) >= 0;
+      if (n.id === 'review') active = REVIEW_PAGES.indexOf(state.page) >= 0;
+      html += `<button class="${active ? 'active' : ''}" onclick="go('${n.id}')">${n.label}</button>`;
+    });
+  }
+  const who = state.authUser
+    ? ('<div class="nav-user"><div class="nav-user-label">当前账号</div>' +
+      esc(state.authUser.username) +
+      (state.authUser.is_admin ? '<div class="nav-user-label" style="margin-top:4px;margin-bottom:0">管理后台</div>' : '') +
+      '</div>')
+    : '<div class="nav-status">请先登录</div>';
+  document.getElementById('nav').innerHTML = who + html;
 }
 
 function go(page, extra) {
@@ -1084,6 +1469,20 @@ function go(page, extra) {
 function render() {
   renderNav();
   const main = document.getElementById('main');
+  if (!state.authUser) {
+    main.innerHTML = renderAuthScreen();
+    document.getElementById('modal-root').innerHTML = state.loading ? renderLoading() : '';
+    return;
+  }
+  if (isAdminSession()) {
+    const adminMap = {
+      admin: renderAdminHome,
+      'admin-detail': renderAdminDetail,
+    };
+    main.innerHTML = (adminMap[state.page] || renderAdminHome)();
+    document.getElementById('modal-root').innerHTML = state.loading ? renderLoading() : '';
+    return;
+  }
   const map = {
     experience: renderExperience,
     practice: renderPracticeHub,
@@ -1109,6 +1508,31 @@ function render() {
     (state.consolidatePreview ? renderConsolidateModal() : '') +
     (state.introWizard ? renderIntroWizardModal() : '') +
     (state.introOverlay || '');
+  bindAutoGrowTextareas(document);
+}
+
+/** 文本框随内容增高，到上限后内部滚动 */
+function bindAutoGrowTextareas(root) {
+  root = root || document;
+  const list = root.querySelectorAll ? root.querySelectorAll('textarea') : [];
+  list.forEach(function (el) {
+    if (el.dataset.autogrow === '0') return;
+    el.classList.add('auto-grow');
+    const maxH = parseInt(el.getAttribute('data-max-h') || el.dataset.maxH || '360', 10);
+    const grow = function () {
+      el.style.height = 'auto';
+      const next = Math.min(el.scrollHeight, maxH);
+      el.style.height = next + 'px';
+      if (el.scrollHeight > maxH) el.classList.add('is-capped');
+      else el.classList.remove('is-capped');
+    };
+    if (!el._autogrowBound) {
+      el.addEventListener('input', grow);
+      el.addEventListener('paste', function () { setTimeout(grow, 0); });
+      el._autogrowBound = true;
+    }
+    grow();
+  });
 }
 
 function renderLoading() {
@@ -1179,13 +1603,15 @@ function loadProfile() {
   try {
     const raw = localStorage.getItem(PROFILE_KEY);
     const obj = raw ? JSON.parse(raw) : {};
+    let name = (obj && obj.displayName) || '';
+    if (name === 'CHEN') name = '';
     return {
-      displayName: (obj && obj.displayName) || 'CHEN',
+      displayName: name,
       targetRole: (obj && obj.targetRole) || '',
       note: (obj && obj.note) || '',
     };
   } catch (e) {
-    return { displayName: 'CHEN', targetRole: '', note: '' };
+    return { displayName: '', targetRole: '', note: '' };
   }
 }
 
@@ -1194,6 +1620,62 @@ function saveProfile(partial) {
   const next = Object.assign({}, cur, partial || {});
   localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
   state.profile = next;
+  state.profileDirty = false;
+}
+
+function loadIntroContent() {
+  try {
+    const raw = localStorage.getItem(INTRO_KEY);
+    if (raw !== null) return raw;
+  } catch (e) {}
+  return null;
+}
+
+function persistIntroContent(text) {
+  const v = text == null ? '' : String(text);
+  localStorage.setItem(INTRO_KEY, v);
+  state.introContent = v;
+  state.introSaved = v;
+  state.introDirty = false;
+  if (state.introVersions && state.introVersions[0]) state.introVersions[0].content = v;
+}
+
+function syncDirtySaveButton(btnId, dirty) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = !dirty;
+  if (dirty) {
+    btn.classList.add('btn-primary');
+  } else {
+    btn.classList.remove('btn-primary');
+  }
+}
+
+function updateIntroDirty() {
+  state.introDirty = (state.introContent || '') !== (state.introSaved || '');
+  syncDirtySaveButton('intro-save-btn', state.introDirty);
+}
+
+function saveIntroDraft() {
+  persistIntroContent(state.introContent || '');
+  toast('定稿已保存');
+  syncDirtySaveButton('intro-save-btn', false);
+}
+
+function updateMeDirty() {
+  const saved = state.profile || loadProfile();
+  const nameEl = document.getElementById('me-name');
+  const roleEl = document.getElementById('me-role');
+  const noteEl = document.getElementById('me-note');
+  if (!nameEl || !roleEl || !noteEl) return;
+  const name = (nameEl.value || '').trim();
+  const role = (roleEl.value || '').trim();
+  const note = (noteEl.value || '').trim();
+  state.profileDirty =
+    name !== (saved.displayName || '') ||
+    role !== (saved.targetRole || '') ||
+    note !== (saved.note || '');
+  syncDirtySaveButton('me-save-btn', state.profileDirty);
 }
 
 /**
@@ -1225,7 +1707,7 @@ function renderConfirmDialog() {
   return `<div class="confirm-modal" onclick="if(event.target===this)cancelConfirmDialog()">
     <div class="confirm-panel">
       <h3>${esc(d.title)}</h3>
-      <p style="line-height:1.5;color:#444;font-size:13px">${esc(d.body)}</p>
+      <p style="line-height:1.5;color:var(--ink-soft);font-size:13px">${esc(d.body)}</p>
       <label class="confirm-skip">
         <input type="checkbox" id="confirm-skip-today" ${d.skipChecked ? 'checked' : ''} onchange="state.confirmDialog.skipChecked=this.checked" />
         <span>下次直接删除不再提示
@@ -1297,6 +1779,56 @@ function renderReviewHub() {
     </div>`;
 }
 
+function renderExpCardsHtml(filtered) {
+  const parentF = state.expTagParent || '';
+  const childF = state.expTagFilter || '';
+  if (!filtered.length) {
+    return '<div class="empty">没有匹配的经历，试试改关键词或清除筛选</div>';
+  }
+  return filtered.map(function (e) {
+    return `
+      <div class="card exp-card">
+        <div class="flex-between">
+          <div>
+            <span class="exp-title">${esc(e.title)}</span>
+            <span class="badge" style="margin-left:8px">${esc(e.type || '经历')}</span>
+            <div class="meta" style="margin-top:4px">${esc(e.period)} · ${esc(e.role)}</div>
+          </div>
+          <div>
+            <button class="btn btn-sm" onclick="openExpForm('${e.id}')">编辑</button>
+            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteExperience('${e.id}')">删除</button>
+            <button class="btn btn-primary btn-sm" onclick="go('interview','${e.id}')">文字准备</button>
+          </div>
+        </div>
+        <p style="margin:12px 0;line-height:1.55">${esc(e.summary)}</p>
+        ${e.metrics ? `<p class="match-ok" style="font-size:13px">结果：${esc(e.metrics)}</p>` : `<p class="exp-warn">缺少关键成果 / 量化数据，建议补充后再练面试</p>`}
+        <div class="chip-row">${classifyExpTags(e.tags).map(function (t) {
+          const on = (childF && t.indexOf(childF) >= 0) || (parentF && !childF && (t === parentF || t.indexOf(parentF + ' · ') === 0));
+          return `<span class="tag clickable tag-l1 ${on?'tag-on':''}" role="button" title="按此标签筛选" onclick="pickExpTagFromCard('${esc(t)}')">${esc(t)}</span>`;
+        }).join('')}</div>
+        ${(e.tags || []).length && JSON.stringify(classifyExpTags(e.tags)) !== JSON.stringify(e.tags || []) ? `<p class="meta" style="margin-top:4px">原始标签：${(e.tags || []).map(esc).join(' · ')}</p>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function refreshExpListOnly() {
+  if (state.page !== 'experience' || state.expForm) return;
+  const filtered = filterExperiences(state.experiences);
+  const countEl = document.getElementById('exp-filter-count');
+  const listEl = document.getElementById('exp-list');
+  if (countEl) {
+    countEl.textContent = '共 ' + state.experiences.length + ' 段 · 当前显示 ' + filtered.length + ' 段';
+  }
+  if (listEl) listEl.innerHTML = renderExpCardsHtml(filtered);
+}
+
+function onExpSearchInput(el) {
+  state.expSearch = el.value;
+  clearTimeout(state._expSearchTimer);
+  // 停顿后再筛，避免每敲一字整页重绘导致输入框失焦「跳走」
+  state._expSearchTimer = setTimeout(refreshExpListOnly, 280);
+}
+
 /* ========== ① 经历库 ========== */
 function renderExperience() {
   if (state.expForm) return renderExpForm();
@@ -1320,24 +1852,35 @@ function renderExperience() {
         ondragleave="this.classList.remove('drag')"
         ondrop="onResumeDrop(event)">
         拖拽或点击上传 PDF / Word（.docx）
-        <div class="meta" style="margin-top:6px">解析后可勾选导入；原文件不会保存到服务器。扫描件请改用下方粘贴文本。</div>
       </div>
       <input type="file" id="resume-file" class="hidden" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onchange="onResumeFileSelected(event)" />
-      <button class="btn btn-primary" onclick="openExpForm(null)">＋ 手动添加经历</button>
+      <button class="btn btn-primary add-exp" onclick="openExpForm(null)">＋ 手动添加经历</button>
     </div>
+    ${state.expPasteOpen ? `
     <div class="card" style="margin-bottom:12px">
       <div class="form-row" style="margin:0">
-        <label>粘贴简历文本 <span class="hint">PDF 无法选中文字时用这个</span></label>
+        <div class="flex-between" style="align-items:center;margin-bottom:8px">
+          <label style="margin:0">粘贴简历文本</label>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="state.expPasteOpen=false;render()">收起</button>
+        </div>
+        <p class="meta" style="margin-bottom:8px">适合扫描件或无法选中文字的 PDF：把实习 / 项目段落贴进来再解析。</p>
         <textarea id="resume-paste" placeholder="把实习或项目那段贴进来…" style="min-height:72px"></textarea>
         <button class="btn btn-sm" style="margin-top:8px" onclick="parseResumeText()">解析粘贴文本</button>
       </div>
-    </div>
+    </div>` : `
+    <p class="meta" style="margin:-4px 0 14px">
+      解析简历文件失败？
+      <button class="btn btn-ghost btn-sm" type="button" style="padding:0 4px;margin:0;vertical-align:baseline"
+        onclick="state.expPasteOpen=true;render();setTimeout(function(){var el=document.getElementById('resume-paste');if(el)el.focus();},0)">
+        试试直接粘贴简历文本
+      </button>
+    </p>`}
     <div class="card filter-card" style="margin-bottom:12px">
       <div class="form-row" style="margin-bottom:10px">
         <label>搜索</label>
-        <input type="search" placeholder="公司、角色、标签、摘要…"
+        <input id="exp-search" type="search" placeholder="公司、角色、标签、摘要…"
           value="${esc(state.expSearch || '')}"
-          oninput="state.expSearch=this.value;render()" />
+          oninput="onExpSearchInput(this)" />
       </div>
       <div class="form-row" style="margin-bottom:8px">
         <label>类型</label>
@@ -1368,33 +1911,9 @@ function renderExperience() {
         </div>` : ''}
         <button class="btn btn-sm" style="margin-top:8px" type="button" onclick="normalizeAllExpTags()">整理全部标签</button>
       </div>
-      <p class="meta" style="margin-top:12px;margin-bottom:0">共 ${state.experiences.length} 段 · 当前显示 ${filtered.length} 段</p>
+      <p id="exp-filter-count" class="meta" style="margin-top:12px;margin-bottom:0">共 ${state.experiences.length} 段 · 当前显示 ${filtered.length} 段</p>
     </div>
-    ${!filtered.length ? '<div class="empty">没有匹配的经历，试试改关键词或清除筛选</div>' : ''}
-    ${filtered.map(e => `
-      <div class="card exp-card">
-        <div class="flex-between">
-          <div>
-            <span class="exp-title">${esc(e.title)}</span>
-            <span class="badge" style="margin-left:8px">${esc(e.type || '经历')}</span>
-            <div class="meta" style="margin-top:4px">${esc(e.period)} · ${esc(e.role)}</div>
-          </div>
-          <div>
-            <button class="btn btn-sm" onclick="openExpForm('${e.id}')">编辑</button>
-            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteExperience('${e.id}')">删除</button>
-            <button class="btn btn-primary btn-sm" onclick="go('interview','${e.id}')">文字准备</button>
-          </div>
-        </div>
-        <p style="margin:12px 0;line-height:1.55">${esc(e.summary)}</p>
-        ${e.metrics ? `<p class="match-ok" style="font-size:13px">结果：${esc(e.metrics)}</p>` : ''}
-        ${!e.metrics || e.missingHint ? `<p class="meta" style="margin-top:4px">${esc(e.missingHint || '建议补充可量化的结果，面试容易被追问')}</p>` : ''}
-        <div class="chip-row">${classifyExpTags(e.tags).map(function (t) {
-          const on = (childF && t.indexOf(childF) >= 0) || (parentF && !childF && (t === parentF || t.indexOf(parentF + ' · ') === 0));
-          return `<span class="tag clickable tag-l1 ${on?'tag-on':''}" role="button" title="按此标签筛选" onclick="pickExpTagFromCard('${esc(t)}')">${esc(t)}</span>`;
-        }).join('')}</div>
-        ${(e.tags || []).length && JSON.stringify(classifyExpTags(e.tags)) !== JSON.stringify(e.tags || []) ? `<p class="meta" style="margin-top:4px">原始标签：${(e.tags || []).map(esc).join(' · ')}</p>` : ''}
-      </div>
-    `).join('')}`;
+    <div id="exp-list">${renderExpCardsHtml(filtered)}</div>`;
 }
 
 function onResumeDrop(ev) {
@@ -1427,10 +1946,19 @@ async function parseResumeText() {
 }
 
 async function runResumeParse(formData) {
-  if (!state.apiOnline) { toast('后端未连接'); return; }
+  if (!state.apiOnline) { toast('暂时连不上服务'); return; }
   showLoading('正在解析简历…');
   try {
-    const res = await fetch(API_BASE + '/api/experiences/parse', { method: 'POST', body: formData });
+    const res = await fetch(API_BASE + '/api/experiences/parse', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: formData,
+    });
+    if (res.status === 401) {
+      clearAuthSession();
+      render();
+      throw new Error('请先登录');
+    }
     if (!res.ok) {
       let msg = res.status + ' ' + res.statusText;
       try { msg = await res.text(); } catch (e) {}
@@ -1447,7 +1975,7 @@ async function runResumeParse(formData) {
       char_count: data.char_count || 0,
       text_preview: data.text_preview || '',
     };
-    toast('解析出 ' + state.resumeParse.items.length + ' 条 · ' + (data.llm_effective || 'mock'));
+    toast('解析出 ' + state.resumeParse.items.length + ' 条经历');
     render();
   } catch (e) {
     hideLoading();
@@ -1467,7 +1995,7 @@ function renderResumeParseModal() {
         <button class="btn btn-sm" onclick="state.resumeParse=null;render()">关闭</button>
       </div>
       <p class="meta" style="margin-bottom:10px">
-        抽字 ${p.char_count} 字 · LLM=${esc(p.llm_effective)}
+        抽字 ${p.char_count} 字
         ${p.warning ? ' · ⚠ ' + esc(p.warning) : ''}
         · 请勾选要导入的条目，导入后仍可编辑
       </p>
@@ -1566,20 +2094,20 @@ function renderExpForm() {
           </select>
         </div>
         <div class="form-row">
-          <label>公司 / 项目名称 *</label>
+          <label class="req-label">公司 / 项目名称 *</label>
           <input type="text" id="f-company" value="${esc(f.company || f.title || '')}" placeholder="如：XX公司 / 校园二手项目" />
         </div>
         <div class="form-row">
-          <label>担任角色 *</label>
+          <label class="req-label">担任角色 *</label>
           <input type="text" id="f-role" value="${esc(f.role || '')}" placeholder="如：产品实习生" />
         </div>
         <div class="form-row">
-          <label>时长 *</label>
+          <label class="req-label">时长 *</label>
           <input type="text" id="f-period" value="${esc(f.period || '')}" placeholder="如：2024.06 - 2024.09" />
         </div>
       </div>
       <div class="form-row">
-        <label>主要工作内容 *</label>
+        <label class="req-label">主要工作内容 *</label>
         <textarea id="f-summary" placeholder="你做了什么、怎么做的…">${esc(f.summary || '')}</textarea>
       </div>
       <div class="form-row">
@@ -1591,10 +2119,10 @@ function renderExpForm() {
         <textarea id="f-extra" style="min-height:60px">${esc(f.extra || '')}</textarea>
       </div>
       <div class="form-row">
-        <label>标签 <span class="hint">逗号分隔，也可点「AI 生成」</span></label>
-        <div style="display:flex;gap:8px">
+        <label>标签 <span class="hint">逗号分隔</span></label>
+        <div class="tags-edit-row">
           <input type="text" id="f-tags" value="${esc(f.tagsStr || '')}" placeholder="数据分析, 0-1项目" />
-          <button class="btn btn-sm" type="button" onclick="aiSuggestExpTags()">AI生成</button>
+          <button class="btn btn-sm" type="button" onclick="aiSuggestExpTags()">AI 生成</button>
         </div>
       </div>
       <button class="btn btn-primary" onclick="saveExpForm()">保存</button>
@@ -1604,17 +2132,34 @@ function renderExpForm() {
 }
 
 function aiSuggestExpTags() {
-  const company = document.getElementById('f-company').value;
-  const summary = document.getElementById('f-summary').value;
-  const text = company + ' ' + summary;
-  let tags = [];
-  if (/数据|分析|指标/i.test(text)) tags.push('数据分析');
-  if (/0-1|从零|新建/i.test(text)) tags.push('0-1项目');
-  if (/Python|看板|可视化/i.test(text)) tags.push('Python', '可视化');
-  if (/产品/i.test(text)) tags.push('产品');
-  if (!tags.length) tags = ['待补充'];
-  document.getElementById('f-tags').value = tags.join(', ');
-  toast('已根据内容生成标签（Demo）');
+  const company = (document.getElementById('f-company') || {}).value || '';
+  const role = (document.getElementById('f-role') || {}).value || '';
+  const period = (document.getElementById('f-period') || {}).value || '';
+  const summary = (document.getElementById('f-summary') || {}).value || '';
+  const metrics = (document.getElementById('f-metrics') || {}).value || '';
+  const extra = (document.getElementById('f-extra') || {}).value || '';
+  const type = (document.getElementById('f-type') || {}).value || '实习';
+  if (!(summary.trim() || company.trim())) {
+    toast('请先填写公司/项目或主要工作内容');
+    return;
+  }
+  (async function () {
+    try {
+      showLoading('AI 正在生成标签…');
+      const data = await api('/api/experiences/suggest-tags', {
+        method: 'POST',
+        body: JSON.stringify({ type, company, role, period, summary, metrics, extra }),
+      });
+      hideLoading();
+      const tags = data.tags || [];
+      const el = document.getElementById('f-tags');
+      if (el) el.value = tags.join(', ');
+      toast(tags.length ? (data.llm_effective === 'openai' ? '已生成标签' : '已生成标签（演示规则）') : '未生成标签');
+    } catch (e) {
+      hideLoading();
+      toast('生成失败：' + e.message);
+    }
+  })();
 }
 
 async function saveExpForm() {
@@ -1637,13 +2182,13 @@ async function saveExpForm() {
     if (state.expForm.isNew) {
       const created = await api('/api/experiences', { method: 'POST', body: JSON.stringify(payload) });
       replaceExp(mapExp(created));
-      toast('经历已添加（已写入后端）');
+      toast('经历已添加');
     } else {
       const updated = await api('/api/experiences/' + state.expForm.id, {
         method: 'PUT', body: JSON.stringify(payload),
       });
       replaceExp(mapExp(updated));
-      toast('经历已更新（已写入后端）');
+      toast('经历已更新');
     }
     state.expForm = null;
     render();
@@ -1700,6 +2245,7 @@ async function normalizeAllExpTags() {
 /* ========== ② 自我介绍 ========== */
 function renderIntro() {
   const role = (state.profile && state.profile.targetRole) || state.sessionSetup.targetRole || '';
+  state.introDirty = (state.introContent || '') !== (state.introSaved || '');
   return `
     <h1 class="page-title">${renderHubBack('practice')}自我介绍</h1>
     <p class="page-lead">会结合经历库和目标岗位，帮你生成初稿、润色成稿，或通过引导提问组织口述（当前：${state.llmEffective === 'openai' ? '已接真实模型' : '演示模式'}）。</p>
@@ -1715,8 +2261,9 @@ function renderIntro() {
     <button class="btn" onclick="startIntroAI('polish')">我自己写，AI 润色</button>
     <button class="btn" onclick="startIntroAI('guide')">AI 引导提问再组织</button>
     <div class="card" style="margin-top:16px">
-      <textarea oninput="state.introContent=this.value">${esc(state.introContent)}</textarea>
-      <button class="btn btn-primary" style="margin-top:8px" onclick="toast('定稿已保存（本机）')">保存定稿</button>
+      <textarea oninput="state.introContent=this.value;updateIntroDirty()" placeholder="在这里写你的自我介绍定稿…">${esc(state.introContent)}</textarea>
+      <button id="intro-save-btn" class="btn ${state.introDirty ? 'btn-primary' : ''}" style="margin-top:8px"
+        ${state.introDirty ? '' : 'disabled'} onclick="saveIntroDraft()">保存定稿</button>
       <button class="btn btn-danger" style="margin-top:8px" onclick="clearIntro()">清空自我介绍</button>
     </div>`;
 }
@@ -1752,8 +2299,9 @@ async function runIntroAI() {
     }
     if ((data.content || '').trim()) {
       state.introContent = data.content;
+      state.introDirty = (state.introContent || '') !== (state.introSaved || '');
       state.introWizard = null;
-      toast('已填入编辑区');
+      toast('已填入编辑区，记得点「保存定稿」');
       render();
       return;
     }
@@ -1807,11 +2355,11 @@ async function clearIntro() {
   const ok = await confirmDelete({
     scope: 'intro',
     title: '清空自我介绍？',
-    body: '将清空当前定稿文案。这只影响本机页面内容，不会删经历库。',
+    body: '将清空当前定稿文案，不会删除经历库。',
     dangerLabel: '确认清空',
   });
   if (!ok) return;
-  state.introContent = '';
+  persistIntroContent('');
   toast('自我介绍已清空');
   render();
 }
@@ -1848,7 +2396,7 @@ function renderSessionSetup(channel) {
       <h3 style="margin-bottom:8px">投递材料</h3>
       <p class="meta" style="margin-bottom:12px">勾选本场要覆盖的经历，再填写目标岗位。岗位说明建议一并粘贴，提问会更贴合真实面试。</p>
       <div class="form-row">
-        <label>选择经历 *</label>
+        <label class="req-label">选择经历 *</label>
         ${!state.experiences.length ? '<p class="meta">还没有经历，请先去 <button class="btn btn-sm" onclick="go(\'experience\')">经历库</button> 添加</p>' : ''}
         ${state.experiences.map(function (e) {
           const on = selected.indexOf(e.id) >= 0;
@@ -1863,14 +2411,9 @@ function renderSessionSetup(channel) {
         </div>
       </div>
       <div class="form-row">
-        <label>目标岗位 *</label>
+        <label class="req-label">目标岗位 *</label>
         <input type="text" id="sess-role" value="${esc(s.targetRole || '')}" placeholder="如：产品经理 / 后端实习生"
           oninput="state.sessionSetup.targetRole=this.value" />
-        <div class="chip-row" style="margin-top:6px">
-          ${['产品经理','产品实习生','数据分析','后端开发','前端开发'].map(function (r) {
-            return `<span class="tag clickable" onclick="state.sessionSetup.targetRole='${r}';render()">${r}</span>`;
-          }).join('')}
-        </div>
       </div>
       <div class="form-row">
         <label>岗位说明 <span class="hint">建议粘贴职责与任职要求，便于交叉提问</span></label>
@@ -2045,9 +2588,9 @@ function renderInterview() {
           <div class="question-box">${esc(iv.currentQ)}</div>
           ${node && node.triggerFrom ? `<p class="meta" style="margin-bottom:8px">追问来源：${esc(node.triggerFrom)}</p>` : ''}
           <div class="answer-actions">
-            <button class="btn ${iv.mode==='user_answered'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('user_answered')">自己答</button>
-            <button class="btn ${iv.mode==='ai_generated'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('ai_generated')">AI 代答</button>
-            <button class="btn ${iv.mode==='framework_only'?'btn-active':''}" ${iv.phase!=='question'?'disabled':''} onclick="pickMode('framework_only')">先看框架再填</button>
+            <button class="btn ${iv.mode==='user_answered'?'btn-active':''}" ${iv.phase==='feedback'?'disabled':''} onclick="pickMode('user_answered')">自己答</button>
+            <button class="btn ${iv.mode==='ai_generated'?'btn-active':''}" ${iv.phase==='feedback'?'disabled':''} onclick="pickMode('ai_generated')">AI 代答</button>
+            <button class="btn ${iv.mode==='framework_only'?'btn-active':''}" ${iv.phase==='feedback'?'disabled':''} onclick="pickMode('framework_only')">先看框架再填</button>
           </div>
           ${iv.phase==='answering'||iv.phase==='feedback' ? `
             <textarea ${iv.phase==='feedback'?'disabled':''} oninput="state.interview.draft=this.value" placeholder="在这里写下你的回答…">${esc(iv.draft)}</textarea>
@@ -2107,7 +2650,7 @@ function renderTree(tree, activeId, depth, treeOpts) {
     <div style="margin-left:${depth * 14}px">
       <div class="tree-node ${activeId===n.nodeId?'active':''}" onclick="selectNode('${n.nodeId}')">
         <div class="tree-label">
-          <small style="color:#888">${esc(n.nodeId)}</small> ${esc(n.question.slice(0, 36))}${n.question.length>36?'…':''}
+          <small style="color:var(--muted)">${esc(n.nodeId)}</small> ${esc(n.question.slice(0, 36))}${n.question.length>36?'…':''}
           ${n.answer ? '<span class="badge">已答</span>' : ''}
           ${archived ? '<span class="badge">已归档</span>' : ''}
         </div>
@@ -2231,14 +2774,17 @@ function selectNode(id) {
 
 async function pickMode(mode) {
   const iv = state.interview;
+  if (iv.phase === 'feedback') return;
+  if (!iv.activeNodeId || !iv.expId) { toast('请先开始提问'); return; }
+  const prev = iv.mode;
   iv.mode = mode;
   iv.phase = 'answering';
   if (mode === 'user_answered') {
-    iv.draft = '';
+    // 首次点选清空；从 AI/框架切回时保留草稿，方便改成自己的话
+    if (!prev) iv.draft = '';
     render();
     return;
   }
-  if (!iv.activeNodeId || !iv.expId) { toast('请先开始提问'); return; }
   try {
     showLoading(mode === 'ai_generated' ? 'AI 正在按本题生成参考答案…' : 'AI 正在生成答题框架…');
     const data = await api('/api/interview/' + iv.expId + '/draft', {
@@ -2274,7 +2820,7 @@ async function submitAnswer() {
     iv.branchFrom = iv.activeNodeId;
     hideLoading();
     render();
-    toast('已点评并落库');
+    toast('已点评并保存');
   } catch (e) {
     hideLoading();
     toast('提交失败：' + e.message);
@@ -2373,7 +2919,7 @@ function speakQuestionBrowser(text) {
     toast('当前浏览器不支持朗读');
     return;
   }
-  stopVoiceSpeak();
+  if (state.voice.speaking) return;
   stopVoiceListen();
   const u = new SpeechSynthesisUtterance(text || '');
   u.lang = 'zh-CN';
@@ -2387,24 +2933,33 @@ function speakQuestionBrowser(text) {
 
 async function speakQuestion(text) {
   stopVoiceListen();
+  if (state.voice.speaking) return;
   if (!shouldUseDoubaoTts()) {
     speakQuestionBrowser(text);
     return;
   }
-  stopVoiceSpeak();
   state.voice.speaking = true;
   render();
   try {
     const res = await fetch(API_BASE + '/api/voice/tts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         text: text || '',
         speaker: state.voiceSpeaker || state.ttsDefaultSpeaker || null,
       }),
     });
+    if (res.status === 401) {
+      clearAuthSession();
+      render();
+      throw new Error('请先登录');
+    }
     if (!res.ok) throw new Error(await res.text());
+    // 若用户期间已点了停止，不再继续播
+    if (!state.voice.speaking) return;
     const blob = await res.blob();
+    stopVoiceSpeak();
+    state.voice.speaking = true;
     _voiceAudio = new Audio(URL.createObjectURL(blob));
     _voiceAudio.onended = function () {
       state.voice.speaking = false;
@@ -2416,6 +2971,7 @@ async function speakQuestion(text) {
       speakQuestionBrowser(text);
     };
     await _voiceAudio.play();
+    render();
   } catch (e) {
     state.voice.speaking = false;
     toast('豆包朗读失败，改用浏览器：' + e.message);
@@ -2503,7 +3059,7 @@ function renderVoice() {
   if (!state.session) {
     return `
       <h1 class="page-title">${renderHubBack('practice')}语音面试 <span class="badge accent">正式演练</span></h1>
-      <p class="page-lead">先勾选要覆盖的经历并填写岗位要求，再听题口述。文字打磨请用 <button class="btn btn-sm" onclick="go('interview')">文字准备</button>。推荐 Chrome；听写不可用时可直接打字。</p>
+      <p class="page-lead">先勾选要覆盖的经历并填写岗位要求，再听题口述。文字打磨请用 <button class="btn btn-sm" onclick="go('interview')">文字准备</button>。推荐 Chrome；<span style="white-space:nowrap">听写不可用时可直接打字。</span></p>
       ${renderVoiceTtsBar()}
       ${renderSessionSetup('voice')}`;
   }
@@ -2723,7 +3279,7 @@ async function saveKnowledge() {
       state.knowledge.unshift(mapKnowledge(created));
     }
     state.addKnowledgeDraft = null;
-    toast('已保存到知识汇总（后端）');
+    toast('已保存到知识汇总');
     render();
   } catch (e) {
     toast('保存失败：' + e.message);
@@ -2799,7 +3355,7 @@ function renderNotebookDetail() {
         <button class="btn btn-sm" onclick="startNotebookQuiz('${exp.id}')" ${qaCount ? '' : 'disabled'}>🎲 随机提问</button>
         <button class="btn btn-sm" onclick="openConsolidate('${exp.id}')" ${qaCount >= 2 ? '' : 'disabled'}>✨ AI 归纳相似题</button>
         <button class="btn btn-sm btn-danger" onclick="deleteExperience('${exp.id}','notebook')">删除此经历</button>
-        <button class="btn btn-primary btn-sm" onclick="go('interview','${exp.id}')">继续文字准备</button>
+        <button class="btn btn-primary btn-sm" onclick="go('interview','${exp.id}')">继续准备</button>
       </div>
     </div>
     ${exp.qaTree.length ? renderDetailTree(exp, exp.qaTree, 0) : '<div class="empty">暂无问答记录 · 文字准备会自动写入，语音面试可点 📓 归档</div>'}
@@ -2839,7 +3395,7 @@ function renderNotebookQuiz() {
         <textarea placeholder="先自己答一遍…" oninput="state.notebookQuiz.answer=this.value">${esc(q.answer)}</textarea>
         <button class="btn btn-primary" style="margin-top:12px" onclick="state.notebookQuiz.revealed=true;render()">查看笔记本里的回答 / 点评</button>
       ` : `
-        <div class="card" style="background:#f5f5f5">
+        <div class="card" style="background:var(--surface-2)">
           <strong>我刚才的回答</strong>
           <p style="margin-top:6px">${esc(q.answer) || '（未填写）'}</p>
         </div>
@@ -2886,7 +3442,7 @@ function renderConsolidateModal() {
       <h3 style="margin-bottom:8px">AI 归纳相似题</h3>
       <p class="meta" style="margin-bottom:12px">${esc(p.summary)}</p>
       ${(p.groups || []).map(function (g, i) {
-        return `<label class="confirm-skip" style="margin:10px 0;padding:10px;border:1px solid #eee;border-radius:8px;display:block">
+        return `<label class="confirm-skip" style="margin:10px 0;padding:10px;border:1px solid var(--line);border-radius:8px;display:block">
           <input type="checkbox" ${g.selected ? 'checked' : ''} onchange="state.consolidatePreview.groups[${i}].selected=this.checked" />
           <strong>${esc(g.canonical_question)}</strong>
           <p class="meta" style="margin-top:4px">合并 ${(g.node_ids || []).join('、')} · ${esc(g.reason || '')}</p>
@@ -2980,7 +3536,7 @@ function renderReviewModal() {
     ${items.length ? items.map((i, idx) => `<div class="card">
       <small class="meta">${esc(i.expTitle)} · ${esc(i.nodeId)}</small>
       <p><strong>${esc(i.question)}</strong></p>
-      <p style="background:#f5f5f5;padding:8px;margin:8px 0;font-size:13px">原答案：${esc(i.oldAnswer || '无')}</p>
+      <p style="background:var(--surface-2);padding:8px;margin:8px 0;font-size:13px">原答案：${esc(i.oldAnswer || '无')}</p>
       <textarea id="rev-${idx}" placeholder="重新回答…">${esc(i.newAnswer)}</textarea>
       ${i.progress || i.stillWeak ? `
         <div class="feedback" style="margin-top:8px">
@@ -3051,7 +3607,7 @@ function renderKnowledge() {
     <div class="chip-row" style="margin-bottom:16px">
       ${allTagKeys.map(t => `<span class="tag clickable ${state.knowledgeFilter===t?'tag-on':''}" onclick="state.knowledgeFilter='${esc(t)}';render()">${esc(t)}</span>`).join('')}
     </div>
-    ${list.length === 0 ? '<div class="empty">暂无知识条目</div>' : list.map(k => {
+    ${list.length === 0 ? '<div class="empty">还没有知识卡片。练过一轮后，可以从笔记本把重点题放进来。</div>' : list.map(k => {
       const exp = k.source ? getExpById(k.source.expId) : null;
       return `
         <div class="card">
@@ -3140,12 +3696,12 @@ function renderQuiz() {
         <textarea placeholder="先自己答一遍…" oninput="state.quiz.answer=this.value">${esc(answer)}</textarea>
         <button class="btn btn-primary" style="margin-top:12px" onclick="state.quiz.revealed=true;render()">查看原答案 / 参考</button>
       ` : `
-        <div class="card" style="background:#f5f5f5">
+        <div class="card" style="background:var(--surface-2)">
           <strong>我刚才的回答</strong>
           <p style="margin-top:6px">${esc(answer) || '（未填写）'}</p>
         </div>
         <div class="card">
-          <strong>入库时的回答</strong>
+          <strong>原先保存的回答</strong>
           <p style="margin-top:6px">${esc(item.myAnswer) || '（无）'}</p>
         </div>
         <div class="card">
@@ -3160,7 +3716,7 @@ function renderQuiz() {
 
 /* ========== ⑥ 面试经历 ========== */
 const SAMPLE_TRANSCRIPT = `面试官：请先做一下自我介绍。
-候选人：我是 CHEN，之前在 XX 公司做产品实习，负责增长相关的数据分析。
+候选人：我是应届生，之前在一家互联网公司做产品实习，负责增长相关的数据分析。
 
 面试官：增长项目里你怎么定义核心指标的？
 候选人：主要看了 DAU，差不多就定了。
@@ -3178,7 +3734,7 @@ function debriefTranscriptTip(openByDefault) {
         <li>粘贴到下方输入框；建议整理成「面试官：… / 候选人：…」方便提取。</li>
       </ol>
       <p class="meta" style="margin-top:8px">本产品专注归档与弱答分析，暂不内置录音转写；用系统工具即可。</p>
-      <p class="meta" style="margin-top:4px">长度说明：整场粘贴可入库；真模型提取时默认只分析约前 2 万字（可在 .env 用 LLM_TRANSCRIPT_MAX_CHARS 调整），过长可先删寒暄/自我介绍重复段。</p>
+      <p class="meta" style="margin-top:4px">长度说明：整场都可以粘贴保存；分析时默认只看约前 2 万字，过长可先删寒暄/自我介绍重复段。</p>
     </details>`;
 }
 
@@ -3189,7 +3745,7 @@ function renderDebrief() {
     <p class="page-lead">粘贴真实面试转写，自动提取问答，标出弱答，并给出准确性、深度、逻辑、表达四维评分。</p>
     ${debriefTranscriptTip(!(state.debriefs || []).length)}
     <button class="btn btn-primary" onclick="openDebriefForm()">＋ 录入面试转写</button>
-    ${!(state.debriefs || []).length ? '<div class="empty">还没有面试经历，先录入一段转写文本</div>' : ''}
+    ${!(state.debriefs || []).length ? '<div class="empty">还没有面试经历。粘贴一段转写，就可以开始复盘。</div>' : ''}
     ${(state.debriefs || []).map(d => {
       const items = d.items || [];
       const weak = items.filter(i => i.quality === 'weak').length;
@@ -3232,8 +3788,8 @@ function renderDebriefForm() {
         <div class="form-row"><label>日期</label><input type="text" id="db-date" value="${esc(f.interview_date)}" placeholder="2026-08-30" /></div>
       </div>
       <div class="form-row">
-        <label>转写文本 * <span class="hint">建议格式：面试官：… / 候选人：…</span></label>
-        <textarea id="db-transcript" style="min-height:220px" placeholder="${esc(SAMPLE_TRANSCRIPT)}">${esc(f.transcript)}</textarea>
+        <label class="req-label">转写文本 * <span class="hint">建议格式：面试官：… / 候选人：…</span></label>
+        <textarea id="db-transcript" class="auto-grow" data-max-h="480" style="min-height:120px" placeholder="${esc(SAMPLE_TRANSCRIPT)}">${esc(f.transcript)}</textarea>
       </div>
       <button class="btn btn-sm" type="button" onclick="fillSampleTranscript()">填入示例文本</button>
       <button class="btn btn-primary" onclick="saveDebrief()">保存并提取问答</button>
@@ -3334,10 +3890,10 @@ function renderDebriefDetail() {
           ${it.analysis ? `<div class="feedback" style="margin-top:10px"><strong>AI 分析</strong>
             <p style="margin-top:6px">${esc(it.analysis)}</p></div>` : ''}
           ${it.optimized_answer && it.quality === 'weak' ? `
-            <div class="card" style="margin-top:8px;background:#fff;border-style:dashed">
+            <div class="card" style="margin-top:8px;background:var(--surface-2);border-style:dashed">
               <strong>优化回答建议</strong>
               <pre style="white-space:pre-wrap;margin-top:6px;font-size:13px;line-height:1.5">${esc(it.optimized_answer)}</pre>
-              <button class="btn btn-sm" style="margin-top:8px" onclick="addWeakToKnowledge('${d.id}','${it.id}')">📚 弱答入库到知识汇总</button>
+              <button class="btn btn-sm" style="margin-top:8px" onclick="addWeakToKnowledge('${d.id}','${it.id}')">加入知识汇总</button>
             </div>` : ''}
         </div>`;
     }).join('')}`;
@@ -3439,19 +3995,153 @@ async function addWeakToKnowledge(debriefId, itemId) {
     state.knowledge.unshift(mapKnowledge(created));
     toast('已加入知识汇总');
   } catch (e) {
-    toast('入库失败：' + e.message);
+    toast('保存失败：' + e.message);
   }
 }
 
-/* ========== ⑧ 我的（本机资料卡，不是登录账号） ========== */
+/* ========== 管理后台 ========== */
+function renderAdminQaTree(nodes, depth) {
+  depth = depth || 0;
+  if (!nodes || !nodes.length) return '<p class="meta">暂无追问记录</p>';
+  return nodes.map(function (n) {
+    const marks = (n.marks || []).join('、') || '无';
+    const kids = renderAdminQaTree(n.children || [], depth + 1);
+    return `<div class="card" style="margin:8px 0 8px ${depth * 16}px;padding:12px">
+      <div class="meta">节点 ${esc(n.nodeId || n.node_id || '')} · 标记：${esc(marks)}</div>
+      <p style="margin-top:6px"><strong>问</strong> ${esc(n.question || '')}</p>
+      <p style="margin-top:6px"><strong>答</strong> ${esc(n.answer || n.userAnswer || '（未答）')}</p>
+      ${n.aiFeedback || n.ai_feedback ? `<p class="meta" style="margin-top:6px">点评：${esc(n.aiFeedback || n.ai_feedback)}</p>` : ''}
+      ${kids}
+    </div>`;
+  }).join('');
+}
+
+function renderAdminHome() {
+  if (!state.adminUsers) {
+    loadAdminUsers();
+    return `<h1 class="page-title">管理后台</h1><p class="meta">正在加载用户列表…</p>`;
+  }
+  const rows = state.adminUsers.filter(function (r) { return !r.is_admin; });
+  const admins = state.adminUsers.filter(function (r) { return r.is_admin; });
+  const list = (!rows.length
+    ? '<p class="meta">还没有普通用户注册</p>'
+    : rows.map(function (r) {
+      return `<div class="auth-admin-row">
+        <div>
+          <strong>${esc(r.display_name || r.username)}</strong>
+          <span class="meta"> · ${esc(r.username)}</span>
+          <div class="meta">经历 ${r.experience_count} · 知识 ${r.knowledge_count} · 面试经历 ${r.debrief_count} · 会话 ${r.session_count}</div>
+          <div class="meta">注册于 ${esc(String(r.created_at || '').slice(0, 19).replace('T', ' '))}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="loadAdminDetail('${esc(r.id)}')">查看全部</button>
+      </div>`;
+    }).join(''));
+  return `
+    <h1 class="page-title">管理后台</h1>
+    <p class="page-lead">只读查看用户在本应用内的全部练习数据。请勿对外泄露他人内容。</p>
+    <div class="summary-bar">
+      <strong>概览</strong>
+      <p class="meta" style="margin-top:8px">普通用户 ${rows.length} · 管理员 ${admins.length}</p>
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:8px">
+        <strong>用户列表</strong>
+        <button class="btn btn-sm" onclick="loadAdminUsers()">刷新</button>
+      </div>
+      ${list}
+    </div>`;
+}
+
+function renderAdminDetail() {
+  const d = state.adminDetail;
+  if (!d || !d.user) {
+    return `<h1 class="page-title">用户详情</h1><p class="meta">暂无数据</p>
+      <button class="btn" onclick="state.page='admin';render()">← 返回列表</button>`;
+  }
+  const u = d.user;
+  const exps = (d.experiences || []).map(function (e) {
+    return `<div class="card" style="margin-bottom:12px">
+      <h3>${esc(e.title || e.company)}</h3>
+      <p class="meta">${esc(e.type)} · ${esc(e.role)} · ${esc(e.period)}</p>
+      <p style="margin-top:8px"><strong>内容</strong></p>
+      <p>${esc(e.summary || '（空）')}</p>
+      <p class="meta" style="margin-top:6px">成果：${esc(e.metrics || '（空）')}</p>
+      <p class="meta">补充：${esc(e.extra || '（空）')}</p>
+      <p class="meta">标签：${esc((e.tags || []).join('、') || '无')}</p>
+      <details style="margin-top:10px">
+        <summary>追问树（${(e.qa_tree || []).length} 根节点）</summary>
+        ${renderAdminQaTree(e.qa_tree || [])}
+      </details>
+    </div>`;
+  }).join('') || '<p class="meta">无经历</p>';
+
+  const know = (d.knowledge || []).map(function (k) {
+    return `<div class="card" style="margin-bottom:10px">
+      <strong>${esc(k.question || '（无题）')}</strong>
+      <span class="badge">${esc(k.status || '')}</span>
+      <p class="meta" style="margin-top:6px">我的回答</p>
+      <p>${esc(k.my_answer || '（空）')}</p>
+      <p class="meta" style="margin-top:6px">参考答案</p>
+      <p>${esc(k.reference_answer || '（空）')}</p>
+      <p class="meta" style="margin-top:6px">备注：${esc(k.note || '无')} · 标签：${esc((k.tags || []).join('、') || '无')}</p>
+    </div>`;
+  }).join('') || '<p class="meta">无知识条目</p>';
+
+  const debriefs = (d.debriefs || []).map(function (db) {
+    const items = (db.items || []).map(function (it, i) {
+      return `<div style="margin:8px 0;padding:8px;background:var(--surface-2);border-radius:8px">
+        <p><strong>Q${i + 1}</strong> ${esc(it.question || '')}</p>
+        <p style="margin-top:4px"><strong>A</strong> ${esc(it.myAnswer || it.my_answer || it.answer || '')}</p>
+      </div>`;
+    }).join('') || '<p class="meta">无提取问答</p>';
+    return `<div class="card" style="margin-bottom:12px">
+      <h3>${esc(db.title || '未命名')}</h3>
+      <p class="meta">${esc(db.company)} · ${esc(db.role)} · ${esc(db.interview_date)}</p>
+      <details style="margin-top:8px"><summary>转写全文</summary>
+        <pre style="white-space:pre-wrap;font-family:inherit;margin-top:8px">${esc(db.transcript || '（空）')}</pre>
+      </details>
+      <details style="margin-top:8px" open><summary>提取问答</summary>${items}</details>
+    </div>`;
+  }).join('') || '<p class="meta">无面试经历</p>';
+
+  const sessions = (d.sessions || []).map(function (s) {
+    return `<div class="card" style="margin-bottom:12px">
+      <h3>会话 ${esc(s.id)}</h3>
+      <p class="meta">${esc(s.channel)} · 岗位 ${esc(s.target_role)} · 经历 ${esc((s.exp_ids || []).join(', ') || '无')}</p>
+      <details style="margin-top:8px"><summary>岗位说明</summary>
+        <pre style="white-space:pre-wrap;font-family:inherit;margin-top:8px">${esc(s.jd_text || '（空）')}</pre>
+      </details>
+      <details style="margin-top:8px"><summary>会话追问树</summary>${renderAdminQaTree(s.qa_tree || [])}</details>
+    </div>`;
+  }).join('') || '<p class="meta">无模拟会话</p>';
+
+  return `
+    <h1 class="page-title">
+      <button class="btn btn-ghost btn-sm" onclick="state.page='admin';state.adminDetail=null;render()">← 用户列表</button>
+      ${esc(u.display_name || u.username)}
+    </h1>
+    <p class="page-lead">账号 ${esc(u.username)} · 经历 ${u.experience_count} · 知识 ${u.knowledge_count} · 面试经历 ${u.debrief_count} · 会话 ${u.session_count}</p>
+    <div class="card"><strong>经历库</strong></div>
+    ${exps}
+    <div class="card" style="margin-top:8px"><strong>知识汇总</strong></div>
+    ${know}
+    <div class="card" style="margin-top:8px"><strong>面试经历</strong></div>
+    ${debriefs}
+    <div class="card" style="margin-top:8px"><strong>模拟会话</strong></div>
+    ${sessions}`;
+}
+
+/* ========== ⑧ 我的 ========== */
 function renderMe() {
+  state.profileDirty = false;
   const p = state.profile || loadProfile();
+  const u = state.authUser || {};
   const skipMap = loadSkipMap();
   const today = todayStr();
   const qaCount = state.experiences.reduce(function (n, e) { return n + countNodes(e.qaTree || []); }, 0);
   const skipRows = Object.keys(DELETE_SCOPES).map(function (scope) {
     const on = skipMap[scope] === today;
-    return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid #eee">
+    return `<div class="flex-between" style="padding:8px 0;border-bottom:1px solid var(--line)">
       <div>
         <strong>${esc(DELETE_SCOPES[scope])}</strong>
         <div class="meta">${on ? '今日删除不再确认' : '删除前会确认'}</div>
@@ -3461,30 +4151,55 @@ function renderMe() {
   }).join('');
   return `
     <h1 class="page-title">我的</h1>
-    <p class="page-lead">当前没有账号登录。这里是本机资料卡：称呼只保存在这台电脑的浏览器里；练习数据仍在本地数据库中。</p>
+    <p class="page-lead">管理本机称呼偏好，以及退出当前账号。</p>
     <div class="card">
+      <div class="flex-between" style="margin-bottom:16px;align-items:center">
+        <div>
+          <div class="meta">当前账号</div>
+          <div class="me-account-name">${esc(u.username || '')}</div>
+          ${u.display_name && u.display_name !== u.username
+            ? `<p class="meta" style="margin-top:4px">称呼：${esc(u.display_name)}</p>` : ''}
+        </div>
+        <button class="btn btn-danger" onclick="logout()">退出账号</button>
+      </div>
       <div class="form-grid">
         <div class="form-row">
           <label>称呼</label>
-          <input type="text" id="me-name" value="${esc(p.displayName || '')}" placeholder="怎么称呼你" />
+          <input type="text" id="me-name" value="${esc(p.displayName || '')}" placeholder="怎么称呼你"
+            oninput="updateMeDirty()" />
         </div>
         <div class="form-row">
           <label>目标岗位</label>
-          <input type="text" id="me-role" value="${esc(p.targetRole || '')}" placeholder="如：产品经理 / 后端实习" />
+          <input type="text" id="me-role" value="${esc(p.targetRole || '')}" placeholder="如：产品经理 / 数据分析"
+            oninput="updateMeDirty()" />
         </div>
       </div>
       <div class="form-row">
         <label>备注</label>
-        <textarea id="me-note" style="min-height:64px" placeholder="求职阶段、城市等">${esc(p.note || '')}</textarea>
+        <textarea id="me-note" style="min-height:64px" placeholder="求职阶段、城市等"
+          oninput="updateMeDirty()">${esc(p.note || '')}</textarea>
       </div>
-      <button class="btn btn-primary" onclick="saveMeForm()">保存资料卡</button>
+      <button id="me-save-btn" class="btn ${state.profileDirty ? 'btn-primary' : ''}"
+        ${state.profileDirty ? '' : 'disabled'} onclick="saveMeForm()">保存资料卡</button>
+    </div>
+    <div class="card">
+      <strong>外观主题</strong>
+      <p class="meta" style="margin:8px 0 12px">只改颜色，字体与间距保持一致；选择会保存在本机。</p>
+      <button class="btn ${state.theme==='warm'?'btn-primary':''}" onclick="setTheme('warm')">温暖陪伴</button>
+      <button class="btn ${state.theme==='rational'?'btn-primary':''}" onclick="setTheme('rational')">理性工具</button>
+      <button class="btn ${state.theme==='night'?'btn-primary':''}" onclick="setTheme('night')">夜间模式</button>
+      <p class="meta" style="margin-top:10px">${
+        state.theme==='night' ? '当前：深色界面 · 柔和蓝强调'
+        : state.theme==='rational' ? '当前：冷灰工作台 · 石板蓝强调'
+        : '当前：暖米纸面 · 陶土强调'
+      }</p>
     </div>
     <div class="summary-bar">
-      <strong>本机数据概览</strong>
+      <strong>我的数据概览</strong>
       <p class="meta" style="margin-top:8px">
         经历 ${state.experiences.length} 段 · 追问节点 ${qaCount} · 知识 ${state.knowledge.length} 条 · 面试经历 ${(state.debriefs || []).length} 场
       </p>
-      <p class="meta" style="margin-top:4px">后端 LLM：${esc(state.llmEffective || (state.apiOnline ? '未知' : '未连接'))}</p>
+      <p class="meta" style="margin-top:4px">当前模型：${esc(state.llmEffective === 'openai' ? '已接入' : (state.apiOnline ? '演示模式' : '未连接'))}</p>
     </div>
     <div class="card">
       <strong>删除确认偏好（按模块、仅今日）</strong>
@@ -3496,13 +4211,15 @@ function renderMe() {
 }
 
 function saveMeForm() {
+  if (!state.profileDirty) return;
   saveProfile({
-    displayName: (document.getElementById('me-name').value || '').trim() || 'CHEN',
+    displayName: (document.getElementById('me-name').value || '').trim(),
     targetRole: (document.getElementById('me-role').value || '').trim(),
     note: (document.getElementById('me-note').value || '').trim(),
   });
-  toast('资料卡已保存在本机浏览器');
-  render();
+  state.profileDirty = false;
+  toast('资料卡已保存');
+  syncDirtySaveButton('me-save-btn', false);
 }
 
 /* ========== ⑦ 岗位定制 ========== */
@@ -3532,7 +4249,7 @@ async function analyzeJD() {
     state.jdReport = data;
     hideLoading();
     render();
-    toast(data.llm_effective === 'openai' ? '匹配分析完成' : '当前仍为 Mock（未读到 Key）');
+    toast(data.llm_effective === 'openai' ? '匹配分析完成' : '匹配分析完成（演示模式）');
   } catch (e) {
     hideLoading();
     toast('分析失败：' + e.message);
@@ -3550,8 +4267,8 @@ function renderJDReport(r) {
       <h3 style="margin-bottom:8px">匹配度报告 <span class="badge">${esc(r.score)}/100</span>
         ${r.llm_effective ? `<span class="badge">${esc(r.llm_effective)}</span>` : ''}
       </h3>
-      <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:16px">
-        <div style="height:8px;width:${Math.max(0, Math.min(100, Number(r.score) || 0))}%;background:#1a56db;border-radius:4px"></div>
+      <div style="height:8px;background:var(--line);border-radius:4px;margin-bottom:16px">
+        <div style="height:8px;width:${Math.max(0, Math.min(100, Number(r.score) || 0))}%;background:var(--accent);border-radius:4px"></div>
       </div>
       <h4 class="match-ok" style="margin-bottom:8px">✓ 匹配点</h4>
       ${matches.length ? matches.map(m => `<p style="margin-bottom:6px"><strong>${esc(m.exp)}</strong> — ${esc(m.point)}</p>`).join('') : '<p class="meta">暂无</p>'}
@@ -3569,20 +4286,63 @@ function renderJDReport(r) {
 }
 
 /* boot */
+applyTheme(state.theme || getTheme());
 state.profile = loadProfile();
-state.introVersions[0].content = state.introContent;
+(function initIntroPersist() {
+  const fromLs = loadIntroContent();
+  // 清掉旧版「我是 CHEN」演示自我介绍
+  if (fromLs !== null && /我是\s*CHEN/.test(fromLs)) {
+    persistIntroContent('');
+  } else if (fromLs !== null) {
+    state.introContent = fromLs;
+  }
+  state.introSaved = state.introContent || '';
+  state.introDirty = false;
+  if (state.introVersions && state.introVersions[0]) {
+    state.introVersions[0].content = state.introContent;
+  }
+  // 清掉本机资料卡里残留的 CHEN
+  if ((state.profile.displayName || '') === 'CHEN') {
+    saveProfile({ displayName: '' });
+  }
+})();
 render();
 (async function boot() {
   try {
-    await refreshAll();
-    toast('已连接后端 · LLM=' + (state.llmEffective || 'mock'));
-    render();
+    const health = await api('/api/health');
+    state.apiOnline = true;
+    state.apiError = '';
+    state.llmEffective = health.llm_effective || 'mock';
+    state.ttsEffective = health.tts_effective || 'browser';
+    state.ttsDoubaoConfigured = !!health.tts_doubao_configured;
   } catch (e) {
     state.apiOnline = false;
     state.apiError = String(e.message || e);
     render();
-    toast('后端未连接：请先启动 uvicorn（端口 8000）');
+    toast('暂时连不上服务，请确认应用已启动');
+    return;
   }
+
+  const token = getAuthToken();
+  if (token) {
+    try {
+      const me = await api('/api/auth/me');
+      state.authUser = me;
+      if (me.is_admin) {
+        state.page = 'admin';
+        await loadAdminUsers();
+        toast('已进入管理后台');
+        return;
+      }
+      await refreshAll();
+      toast(state.llmEffective === 'openai' ? '已连接服务' : '已连接服务（演示模式）');
+      render();
+      return;
+    } catch (e) {
+      clearAuthSession();
+    }
+  }
+  render();
 })();
 </script>
 </body>

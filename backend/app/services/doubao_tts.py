@@ -13,70 +13,20 @@ from app.config import settings
 
 DOUBAO_TTS_URL = "https://openspeech.bytedance.com/api/v3/tts/unidirectional"
 
-# 面试场景精选语音包（豆包 TTS 2.0 / seed-tts-2.0）
-# speaker 以官方文档为准；未开通的音色调用会报错，可换包或改 .env
+# 面试读题：仅保留女声 / 男声各一
 DOUBAO_VOICE_PACKS: List[Dict[str, str]] = [
     {
-        "id": "zh_female_vv_uranus_bigtts",
-        "name": "Vivi",
-        "gender": "女",
-        "style": "通用 · 清晰自然",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_female_xiaohe_uranus_bigtts",
-        "name": "小何",
-        "gender": "女",
-        "style": "通用 · 甜美活泼",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
         "id": "zh_female_kefunvsheng_uranus_bigtts",
-        "name": "暖阳女声",
+        "name": "女声",
         "gender": "女",
-        "style": "客服/播报 · 温和稳重",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_female_yingyujiaoxue_uranus_bigtts",
-        "name": "Tina 老师",
-        "gender": "女",
-        "style": "教学 · 清晰有条理",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_female_wenroushunv_uranus_bigtts",
-        "name": "温柔淑女",
-        "gender": "女",
-        "style": "角色 · 柔和礼貌",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_male_m191_uranus_bigtts",
-        "name": "云舟",
-        "gender": "男",
-        "style": "通用 · 清爽沉稳",
+        "style": "温和稳重",
         "resource_id": "seed-tts-2.0",
     },
     {
         "id": "zh_male_taocheng_uranus_bigtts",
-        "name": "小天",
+        "name": "男声",
         "gender": "男",
-        "style": "通用 · 清爽磁性",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_male_ruyayichen_uranus_bigtts",
-        "name": "儒雅逸辰",
-        "gender": "男",
-        "style": "配音 · 儒雅稳重",
-        "resource_id": "seed-tts-2.0",
-    },
-    {
-        "id": "zh_male_shaonianzixin_uranus_bigtts",
-        "name": "少年梓辛",
-        "gender": "男",
-        "style": "角色 · 年轻清朗",
+        "style": "清爽磁性",
         "resource_id": "seed-tts-2.0",
     },
 ]
@@ -98,8 +48,9 @@ def list_voice_packs() -> List[Dict[str, str]]:
 
 
 def resolve_speaker(speaker: Optional[str] = None) -> str:
+    allowed = {p["id"] for p in DOUBAO_VOICE_PACKS}
     s = _strip(speaker) or _strip(settings.doubao_tts_speaker)
-    if s:
+    if s in allowed:
         return s
     return DOUBAO_VOICE_PACKS[0]["id"]
 

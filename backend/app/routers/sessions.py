@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Experience, InterviewSession
+from app.deps import get_current_user, get_owned
+from app.models import Experience, InterviewSession, User
 from app.schemas import (
     AnswerOut,
     DraftIn,
@@ -80,20 +81,21 @@ def _covered_ids(tree: List[Dict[str, Any]]) -> List[str]:
     return ids
 
 
-def _load_exps(db: Session, exp_ids: List[str]) -> List[Experience]:
+def _load_exps(db: Session, exp_ids: List[str], user: User) -> List[Experience]:
     rows = []
     for eid in exp_ids:
-        row = db.get(Experience, eid)
+        row = (
+            db.query(Experience)
+            .filter(Experience.id == eid, Experience.user_id == user.id)
+            .first()
+        )
         if row:
             rows.append(row)
     return rows
 
 
-def _get_session(db: Session, sid: str) -> InterviewSession:
-    row = db.get(InterviewSession, sid)
-    if not row:
-        raise HTTPException(404, "面试会话不存在")
-    return row
+def _get_session(db: Session, sid: str, user: User) -> InterviewSession:
+    return get_owned(db, InterviewSession, sid, user, not_found="面试会话不存在")
 
 
 def _to_out(
@@ -137,16 +139,22 @@ def _composite_exp(exps: List[Experience], target_role: str) -> Dict[str, Any]:
 
 
 @router.get("", response_model=List[SessionOut])
-def list_sessions(db: Session = Depends(get_db)):
-    rows = db.query(InterviewSession).order_by(InterviewSession.created_at.desc()).limit(20).all()
+def list_sessions(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    rows = (
+        db.query(InterviewSession)
+        .filter(InterviewSession.user_id == user.id)
+        .order_by(InterviewSession.created_at.desc())
+        .limit(20)
+        .all()
+    )
     return [_to_out(r) for r in rows]
 
 
 @router.post("/start", response_model=SessionOut)
-async def start_session(body: SessionCreateIn, db: Session = Depends(get_db)):
+async def start_session(body: SessionCreateIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     if not body.exp_ids:
         raise HTTPException(400, "请至少选择一段经历")
-    exps = _load_exps(db, body.exp_ids)
+    exps = _load_exps(db, body.exp_ids, user)
     if not exps:
         raise HTTPException(400, "所选经历不存在")
     # 保持用户勾选顺序
@@ -169,6 +177,7 @@ async def start_session(body: SessionCreateIn, db: Session = Depends(get_db)):
     )
     row = InterviewSession(
         id=f"sess_{uuid.uuid4().hex[:10]}",
+        user_id=user.id,
         target_role=body.target_role.strip(),
         jd_text=body.jd_text.strip(),
         channel=body.channel,
@@ -188,8 +197,8 @@ async def start_session(body: SessionCreateIn, db: Session = Depends(get_db)):
 
 
 @router.get("/{session_id}", response_model=SessionOut)
-def get_session(session_id: str, db: Session = Depends(get_db)):
-    row = _get_session(db, session_id)
+def get_session(session_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_session(db, session_id, user)
     tree = row.qa_tree
     active = tree[0] if tree else None
     return _to_out(
@@ -202,13 +211,13 @@ def get_session(session_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{session_id}/answer", response_model=AnswerOut)
-async def session_answer(session_id: str, body: SessionAnswerIn, db: Session = Depends(get_db)):
-    row = _get_session(db, session_id)
+async def session_answer(session_id: str, body: SessionAnswerIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_session(db, session_id, user)
     tree = row.qa_tree
     node = find_node(tree, body.node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
-    exps = _load_exps(db, row.exp_ids)
+    exps = _load_exps(db, row.exp_ids, user)
     # feedback 锚定本题 target 经历，否则用合成包
     target = next((e for e in exps if e.id == node.get("targetExpId")), None)
     exp_ctx = _exp_dict(target) if target else _composite_exp(exps, row.target_role)
@@ -244,8 +253,8 @@ async def session_answer(session_id: str, body: SessionAnswerIn, db: Session = D
 
 
 @router.post("/{session_id}/next", response_model=SessionOut)
-async def session_next(session_id: str, body: SessionNextIn, db: Session = Depends(get_db)):
-    row = _get_session(db, session_id)
+async def session_next(session_id: str, body: SessionNextIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_session(db, session_id, user)
     if body.action == "end":
         return _to_out(row, phase="idle")
 
@@ -254,7 +263,7 @@ async def session_next(session_id: str, body: SessionNextIn, db: Session = Depen
     if not current:
         raise HTTPException(404, "节点不存在")
 
-    exps = _load_exps(db, row.exp_ids)
+    exps = _load_exps(db, row.exp_ids, user)
     llm = get_llm()
     generated = await llm.session_next_question(
         [_exp_dict(e) for e in exps],
@@ -301,12 +310,12 @@ async def session_next(session_id: str, body: SessionNextIn, db: Session = Depen
 
 
 @router.post("/{session_id}/draft", response_model=DraftOut)
-async def session_draft(session_id: str, body: DraftIn, db: Session = Depends(get_db)):
-    row = _get_session(db, session_id)
+async def session_draft(session_id: str, body: DraftIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    row = _get_session(db, session_id, user)
     node = find_node(row.qa_tree, body.node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
-    exps = _load_exps(db, row.exp_ids)
+    exps = _load_exps(db, row.exp_ids, user)
     target = next((e for e in exps if e.id == node.get("targetExpId")), None)
     exp_ctx = _exp_dict(target) if target else _composite_exp(exps, row.target_role)
     llm = get_llm()
@@ -333,15 +342,19 @@ def _exp_out(row: Experience) -> ExperienceOut:
 
 
 @router.post("/{session_id}/archive-node", response_model=SessionArchiveOut)
-def archive_session_node(session_id: str, body: SessionArchiveIn, db: Session = Depends(get_db)):
+def archive_session_node(session_id: str, body: SessionArchiveIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """将语音会话追问树中的节点归档到对应经历的笔记本（Experience.qa_tree）。"""
-    row = _get_session(db, session_id)
+    row = _get_session(db, session_id, user)
     node = find_node(row.qa_tree, body.node_id)
     if not node:
         raise HTTPException(404, "节点不存在")
 
     if node.get("archivedToExpId") and node.get("archivedToNodeId"):
-        exp_row = db.get(Experience, node["archivedToExpId"])
+        exp_row = (
+            db.query(Experience)
+            .filter(Experience.id == node["archivedToExpId"], Experience.user_id == user.id)
+            .first()
+        )
         if not exp_row:
             raise HTTPException(404, "已归档的经历不存在")
         return SessionArchiveOut(
@@ -356,7 +369,11 @@ def archive_session_node(session_id: str, body: SessionArchiveIn, db: Session = 
     exp_id = node.get("targetExpId") or (row.exp_ids[0] if row.exp_ids else None)
     if not exp_id:
         raise HTTPException(400, "无法确定目标经历，请确认节点锚定经历")
-    exp_row = db.get(Experience, exp_id)
+    exp_row = (
+        db.query(Experience)
+        .filter(Experience.id == exp_id, Experience.user_id == user.id)
+        .first()
+    )
     if not exp_row:
         raise HTTPException(404, "目标经历不存在")
 

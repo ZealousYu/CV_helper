@@ -96,7 +96,7 @@ uvicorn app.main:app --reload --port 8000
 | LLM | Provider 抽象（Mock / OpenAI 兼容，如 DeepSeek） |
 | 语音 | 浏览器 Web Speech；可选火山引擎豆包 TTS |
 | 前端 | 单页 `demo/standalone.html`，与 API 同端口 `/ui` 挂载 |
-| 部署 | Docker、阿里云、Railway、Render 等（见部署文档） |
+| 部署 | Docker、阿里云、Railway、Render 等（见 [部署上线](docs/部署上线.md)） |
 
 API 与数据模型概览：[MVP-API 与数据模型](docs/MVP-API与数据模型.md)
 

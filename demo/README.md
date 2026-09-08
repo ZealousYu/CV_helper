@@ -13,12 +13,12 @@
 
 ## 本机怎么跑
 
-**完全没装过项目的电脑**：请直接看 [`docs/全新电脑演示.md`](../docs/全新电脑演示.md)（含 Git / Python 安装与 Mac、Windows 命令）。
+**完全没装过项目的电脑**：请直接看 [全新电脑演示](../docs/全新电脑演示.md)（含 Git / Python 安装与 Mac、Windows 命令）。
 
 已有环境时，先起后端，再打开浏览器（推荐走同端口，少踩跨域）：
 
 ```bash
-cd CV_Helper/backend
+cd CV_helper/backend
 source .venv/bin/activate
 uvicorn app.main:app --reload --port 8000
 ```
@@ -43,5 +43,5 @@ uvicorn app.main:app --reload --port 8000
 | 配置 | `backend/.env` 各环境各自维护（API Key、JWT 等），不进 Git |
 | 数据 | 默认 SQLite 在各自机器上；云挂了不会自动回到本机，除非你备份了数据库文件 |
 
-接真实大模型：见 `../docs/接真实大模型.md`。  
-公网部署：见 `../docs/部署上线.md`。
+接真实大模型：见 [接真实大模型](../docs/接真实大模型.md)。  
+公网部署：见 [部署上线](../docs/部署上线.md)。

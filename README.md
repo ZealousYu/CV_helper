@@ -4,14 +4,28 @@
 
 > 核心不是「多一个 ChatGPT 窗口」，而是「练完变成带索引的面试资料」。
 
-## 快速开始
+## `demo/` 是什么？
+
+**不是「只给本地玩玩、不上云」的废弃原型。**  
+`demo/standalone.html` 就是当前正式前端：本地和云主机都跑同一份，后端把它挂在 `/ui`。  
+名字里的 Demo 只表示「单页联调界面」，不是第二套产品。
+
+| 场景 | 怎么用 |
+|------|--------|
+| 本机开发 / 虚拟机挂了 | `uvicorn` → 打开 http://127.0.0.1:8000/ |
+| 阿里云 / Docker / Railway | 同一仓库部署，浏览器打开公网地址（同样进 `/ui/standalone.html`） |
+
+云上挂了也不丢代码：以 GitHub 为准即可恢复本机。
+
+## 快速开始（本机）
 
 ```bash
-cd backend
+git clone https://github.com/ZealousYu/CV_helper.git
+cd CV_helper/backend
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows CMD: .\.venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env   # 可选：填 LLM_API_KEY 接真模型
+cp .env.example .env        # 填 LLM_API_KEY 等；勿把 .env 提交到 Git
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -19,7 +33,13 @@ uvicorn app.main:app --reload --port 8000
 
 接真实大模型说明：`docs/接真实大模型.md`  
 过程跟踪（面试可讲）：`docs/项目搭建过程跟踪.md`  
-**公网部署**：`docs/部署上线.md`（Docker / Render / Railway，建议设 `ACCESS_PASSWORD`）
+**公网部署**：`docs/部署上线.md`（Docker / Render / Railway / 阿里云，建议设 `ACCESS_PASSWORD`）
+
+### 云主机挂了之后
+
+1. 本机重新 `git clone`（或已有目录里 `git pull`）  
+2. 用你自己的 Key 重建 `backend/.env`（密钥从不进仓库）  
+3. 按上面启动即可；SQLite 数据若只在云上，需要事先备份 `cv_helper.db`，否则只有代码没有云上账号数据
 
 ## 当前能力
 

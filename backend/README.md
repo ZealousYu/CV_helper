@@ -15,7 +15,7 @@ uvicorn app.main:app --reload --port 8000
 - API 文档：http://127.0.0.1:8000/docs  
 - 健康检查：http://127.0.0.1:8000/api/health  
 
-未配置 `LLM_API_KEY` 时自动使用 **MockLLM**。接真模型见 `docs/接真实大模型.md`。
+未配置 `LLM_API_KEY` 时自动使用 **MockLLM**。接真模型见 [接真实大模型](../docs/接真实大模型.md)。
 
 ## 目录
 

@@ -84,7 +84,7 @@ uvicorn app.main:app --reload --port 8000
 
 默认 `LLM_PROVIDER=mock`，不配 API Key 也能演示；接真模型见下方文档链接。
 
-更完整的「全新电脑从零安装」说明（含常见问题）：[全新电脑演示](docs/全新电脑演示.md)
+更完整的「从装环境到打开 Demo」说明（含常见问题）：[从配置环境开始到演示 Demo](docs/从配置环境开始到演示Demo.md)
 
 ---
 
@@ -97,7 +97,7 @@ uvicorn app.main:app --reload --port 8000
 | LLM | Provider 抽象（Mock / OpenAI 兼容，如 DeepSeek） |
 | 语音 | 浏览器 Web Speech；可选火山引擎豆包 TTS |
 | 前端 | 单页 `demo/standalone.html`，与 API 同端口 `/ui` 挂载 |
-| 部署 | Docker、阿里云、Railway、Render 等（见 [部署上线](docs/部署上线.md)） |
+| 部署 | Docker、阿里云、Railway、Render 等 |
 
 API 与数据模型概览：[MVP-API 与数据模型](docs/MVP-API与数据模型.md)
 
@@ -117,11 +117,10 @@ API 与数据模型概览：[MVP-API 与数据模型](docs/MVP-API与数据模�
 
 | 文档 | 说明 |
 |------|------|
-| [全新电脑演示](docs/全新电脑演示.md) | 零基础机器从安装到打开 Demo |
+| [从配置环境开始到演示 Demo](docs/从配置环境开始到演示Demo.md) | 零基础机器从安装环境到打开 Demo |
 | [接真实大模型](docs/接真实大模型.md) | 配置 DeepSeek / OpenAI 兼容接口 |
-| [部署上线](docs/部署上线.md) | Docker / 阿里云 / Railway / Render |
 | [竞品对照与融合路线](docs/竞品对照与融合路线.md) | 产品取舍与迭代路线 |
-| [项目搭建过程跟踪](docs/项目搭建过程跟踪.md) | 搭建过程与踩坑（面试可讲） |
+| [项目搭建过程跟踪](docs/项目搭建过程跟踪.md) | 记录搭建过程中的收获与踩坑点 |
 | [产品方案](docs/简历面试助手-产品方案.md) | 早期产品方案 |
 | [MVP-API 与数据模型](docs/MVP-API与数据模型.md) | 接口与模型说明 |
 | [demo 说明](demo/README.md) | 前端目录说明 |

@@ -31,8 +31,7 @@ python --version
 
 ## 1. 下载项目
 
-**任意目录**都可以，例如用户主目录或桌面。不要假设一定有 `cursorProject` 文件夹。
-
+**任意目录**都可以，例如用户主目录或桌面。
 ```bash
 git clone https://github.com/ZealousYu/CV_helper.git
 cd CV_helper/backend

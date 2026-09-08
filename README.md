@@ -1,68 +1,126 @@
 # 简历面试助手（CV Helper）
 
-围绕**简历经历**做结构化模拟面试：可生长的**追问树**、自动归档成笔记本 / 知识汇总，并支持真实面经转写复盘。
+围绕**简历经历**做结构化模拟面试：可生长的追问树、自动归档成笔记本 / 知识汇总，并支持真实面经转写复盘。
 
 > 核心不是「多一个 ChatGPT 窗口」，而是「练完变成带索引的面试资料」。
 
-## `demo/` 是什么？
+仓库：https://github.com/ZealousYu/CV_helper
 
-**不是「只给本地玩玩、不上云」的废弃原型。**  
-`demo/standalone.html` 就是当前正式前端：本地和云主机都跑同一份，后端把它挂在 `/ui`。  
-名字里的 Demo 只表示「单页联调界面」，不是第二套产品。
+---
 
-| 场景 | 怎么用 |
-|------|--------|
-| 本机开发 / 虚拟机挂了 | `uvicorn` → 打开 http://127.0.0.1:8000/ |
-| 阿里云 / Docker / Railway | 同一仓库部署，浏览器打开公网地址（同样进 `/ui/standalone.html`） |
+## 项目背景
 
-云上挂了也不丢代码：以 GitHub 为准即可恢复本机。
+求职准备里常见两类工具：一类是泛用聊天框，练完难沉淀；一类是题库刷题，和自己的简历经历脱节。
 
-## 快速开始（本机）
+CV Helper 以**个人经历**为中心：把模拟问答长成一棵可回跳的**追问树**，并把值得保留的内容归档到笔记本与知识汇总，让「练」和「复盘」落在同一套资料上。文字追问树偏准备与打磨；语音面试偏正式演练；真实面经转写用于对照弱答。产品方向与竞品取舍见 [竞品对照与融合路线](docs/竞品对照与融合路线.md)、[产品方案](docs/简历面试助手-产品方案.md)。
+
+前端主界面是 `demo/standalone.html`（经后端挂载为 `/ui`），**本地演示与云端部署是同一套页面**，不是「只能本地玩」的废弃原型。
+
+---
+
+## 核心功能
+
+| 模块 | 说明 |
+|------|------|
+| 经历库 | 手填或 PDF / Word 解析导入，作为出题与追问的素材 |
+| 文字准备 | 在追问树上打磨答案（深挖 / 换角度 / 发散），可回跳 |
+| 语音面试 | 浏览器读题 + 听写（可接豆包 TTS）；答案写入同一棵树 |
+| 笔记本 / 知识汇总 | 标记待练习、复习对比、跨经历沉淀知识点 |
+| 真实面经 | 粘贴转写 → 抽取问答 → 弱答标红 + 四维评分 |
+| 岗位匹配 | JD 对照经历库，看缺口与表述建议 |
+| 账号体系 | 注册登录、按用户隔离数据；管理员可查看用户摘要 |
+
+---
+
+## 亮点
+
+- **追问树而不是一次性对话**：问答可生长、可回跳，刷新后仍在（SQLite 持久化）
+- **练完能归档**：笔记本与知识汇总把「练过的」变成可复习资产
+- **简历驱动**：出题与追问围绕你的真实经历，而不是通用题海
+- **文字准备 + 语音演练分工清晰**：先打磨结构，再练临场表达
+- **面经复盘带评分维度**：弱答可见，便于对照补洞
+- **默认 Mock、可切真模型**：零 Key 也能走通演示；配 OpenAI 兼容接口（如 DeepSeek）即可增强解析与生成
+
+---
+
+## 如何快速部署到本地并使用 Demo
+
+### 环境要求
+
+- Git
+- Python 3.10+
+
+### 一键流程（Mac / Linux）
 
 ```bash
 git clone https://github.com/ZealousYu/CV_helper.git
 cd CV_helper/backend
 python3 -m venv .venv
-source .venv/bin/activate   # Windows CMD: .\.venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # 填 LLM_API_KEY 等；勿把 .env 提交到 Git
+cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-浏览器打开：http://127.0.0.1:8000/ （跳到 `/ui/standalone.html`）
+### Windows（CMD）
 
-接真实大模型说明：`docs/接真实大模型.md`  
-过程跟踪（面试可讲）：`docs/项目搭建过程跟踪.md`  
-**公网部署**：`docs/部署上线.md`（Docker / Render / Railway / 阿里云，建议设 `ACCESS_PASSWORD`）
+```bat
+git clone https://github.com/ZealousYu/CV_helper.git
+cd CV_helper\backend
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --reload --port 8000
+```
 
-### 云主机挂了之后
+### 打开 Demo
 
-1. 本机重新 `git clone`（或已有目录里 `git pull`）  
-2. 用你自己的 Key 重建 `backend/.env`（密钥从不进仓库）  
-3. 按上面启动即可；SQLite 数据若只在云上，需要事先备份 `cv_helper.db`，否则只有代码没有云上账号数据
+浏览器访问：**http://127.0.0.1:8000/**  
+（自动跳到 `/ui/standalone.html`）
 
-## 当前能力
+建议路径：注册登录 → 经历库添加/导入 → 模拟面试作答与追问 → 查看笔记本 / 知识汇总。
 
-| 模块 | 说明 |
-|------|------|
-| 经历库 | 手填 / PDF·Word 解析导入 |
-| 文字准备 | 打字打磨追问树（深挖/换角度/发散） |
-| **语音面试** | 浏览器朗读 + 听写；答案写入同一追问树 |
-| 笔记本 + 知识汇总 | 标记待练习、复习对比、跨经历知识点 |
-| 真实面经 | 粘贴转写 → 抽问答 → 弱答标红 + 四维分 |
-| 岗位匹配 | JD vs 经历库 |
+默认 `LLM_PROVIDER=mock`，不配 API Key 也能演示；接真模型见下方文档链接。
 
-融合路线见 `docs/竞品对照与融合路线.md`。
+更完整的「全新电脑从零安装」说明（含常见问题）：[全新电脑演示](docs/全新电脑演示.md)
 
-默认 `LLM_PROVIDER=mock`；配置 OpenAI 兼容 Key（如 DeepSeek）后切真模型。
+---
 
 ## 技术栈
 
-- 后端：FastAPI + SQLite + LLM Provider 抽象（Mock / OpenAI 兼容）
-- 前端：单页 Demo（`demo/standalone.html`），同端口 `/ui` 挂载
+| 层级 | 选型 |
+|------|------|
+| 后端 | FastAPI、SQLAlchemy、SQLite |
+| 鉴权 | JWT、bcrypt；可选整站访问密码 |
+| LLM | Provider 抽象（Mock / OpenAI 兼容，如 DeepSeek） |
+| 语音 | 浏览器 Web Speech；可选火山引擎豆包 TTS |
+| 前端 | 单页 `demo/standalone.html`，与 API 同端口 `/ui` 挂载 |
+| 部署 | Docker、阿里云、Railway、Render 等（见部署文档） |
 
-## 注意
+API 与数据模型概览：[MVP-API 与数据模型](docs/MVP-API与数据模型.md)
 
-- 支持**用户名密码注册/登录**，数据按账号隔离；首位注册者（或 `.env` 里的 `ADMIN_*`）为管理员，可在「我的」查看用户摘要
-- 公网建议设 `ACCESS_PASSWORD`，并修改 `JWT_SECRET`
-- **不要提交** `backend/.env`（已在 `.gitignore`）
+---
+
+## 注意事项
+
+- **密钥与配置**：`backend/.env` 含 API Key、JWT 等，**不要提交到 Git**（已在 `.gitignore`）。公网务必修改 `JWT_SECRET`，建议设置 `ACCESS_PASSWORD`
+- **管理员**：`.env` 中可预置 `ADMIN_USERNAME` / `ADMIN_PASSWORD`；否则首位注册用户可为管理员
+- **本地 vs 云端数据**：代码以 GitHub 为准可随时恢复；各环境的 SQLite（如 `cv_helper.db`）与 `.env` **不会自动同步**，云主机数据需自行备份
+- **大陆云域名 HTTPS**：阿里云等大陆机用域名走 80/443 通常需 ICP 备案；未备案可用 `http://公网IP:端口/` 访问
+- **终端里 favicon 404**：可忽略，不影响使用
+
+---
+
+## 相关文档
+
+| 文档 | 说明 |
+|------|------|
+| [全新电脑演示](docs/全新电脑演示.md) | 零基础机器从安装到打开 Demo |
+| [接真实大模型](docs/接真实大模型.md) | 配置 DeepSeek / OpenAI 兼容接口 |
+| [部署上线](docs/部署上线.md) | Docker / 阿里云 / Railway / Render |
+| [竞品对照与融合路线](docs/竞品对照与融合路线.md) | 产品取舍与迭代路线 |
+| [项目搭建过程跟踪](docs/项目搭建过程跟踪.md) | 搭建过程与踩坑（面试可讲） |
+| [产品方案](docs/简历面试助手-产品方案.md) | 早期产品方案 |
+| [MVP-API 与数据模型](docs/MVP-API与数据模型.md) | 接口与模型说明 |
+| [demo 说明](demo/README.md) | 前端目录说明 |
